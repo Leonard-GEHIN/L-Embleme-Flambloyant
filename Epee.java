@@ -1,3 +1,4 @@
+import java.awt.Graphics2D;
 
 public class Epee extends Personnage{
 	
@@ -47,7 +48,7 @@ public class Epee extends Personnage{
 	}
 
 	@Override
-	public void dessiner() {
+	public void dessiner(Board board, Graphics2D g2d) {
 		// TODO Auto-generated method stub
 		
 	}

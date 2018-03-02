@@ -19,13 +19,14 @@ import javax.swing.Timer;
 public class Board extends JPanel implements ActionListener, MouseListener {
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
 	private final int DELAY = 10; // Temps entre deux actualisation (en ms)
-
+	private Carte carte;
 	//SOUND
 	//public Sound snd_loop = new Sound("");
 	/*
 	 * Chargement des images dans la mémoire
 	 * On charge ici les images utilisées par plusieurs instances d'objet ou celle qui servent dans cette classe
-	 */	
+	 */
+	
 	private ImageIcon image_joueur = new ImageIcon("sprites/personnage/spr_right_1.png");
 	
 	protected Image image_joueur_final = image_joueur.getImage();
@@ -42,26 +43,28 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//SOUND
 		//snd_loop.play(); //Lance la musique
 		//snd_loop.loop(); //Répète la musique lorsqu'elle est finie
+		
+		//Initialise mes variables
+		carte = new Carte();
 	}
 
 	@Override
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
 		doDrawing(g);
-		Toolkit.getDefaultToolkit().sync(); //Nécessaire au fonctionnement de swing (obscur)
+		Toolkit.getDefaultToolkit().sync(); //Nécessaire au fonctionnement de swing
 	}
 
 	private void doDrawing(Graphics g){ //méthode appelée pour mettre à jour l'affichage
 		Graphics2D g2d = (Graphics2D) g; //On cast g en graphics2D(bibliothèque Java) pour utiliser la méthode drawImage()
-		//g2d.drawImage(Image, x(zéro en haut à gauche), y(zéro en haut à gauche), le "component" où afficher l'image)
-		//g2d.drawString("Score: " + score, 64, 12);
+		carte.dessiner(this, g2d);
+		//g2d.drawString("Score: ", 4, 12);
 		//nomDeImage = nomDeImageIcon.getImage();
 	}
 
 	
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
-		
 		repaint(); //Affiche l'image
 	}
 
