@@ -20,6 +20,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
 	private final int DELAY = 10; // Temps entre deux actualisation (en ms)
 	private Carte carte;
+	private Joueur joueur = new Joueur();
 	//SOUND
 	//public Sound snd_loop = new Sound("");
 	/*
@@ -37,7 +38,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		this.addMouseListener(this);
 		
 		setFocusable(true); //Permet de pouvoir mettre la fenêtre en premier-plan 
-		setBackground(Color.WHITE);
+		setBackground(Color.CYAN);
 		timer = new Timer(DELAY,this); 
 		timer.start(); //Le timer démarre ici
 		//SOUND
@@ -45,7 +46,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//snd_loop.loop(); //Répète la musique lorsqu'elle est finie
 		
 		//Initialise mes variables
+		chargerImage();
 		carte = new Carte();
+		joueur.ajouterPersonnage(new Epee(true));
+		Carte.afficherCarteTerminal();
 	}
 
 	@Override
@@ -55,14 +59,17 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		Toolkit.getDefaultToolkit().sync(); //Nécessaire au fonctionnement de swing
 	}
 
-	private void doDrawing(Graphics g){ //méthode appelée pour mettre à jour l'affichage
+	//méthode appelée pour mettre à jour l'affichage
+	private void doDrawing(Graphics g){ 
 		Graphics2D g2d = (Graphics2D) g; //On cast g en graphics2D(bibliothèque Java) pour utiliser la méthode drawImage()
 		carte.dessiner(this, g2d);
+		joueur.dessiner(this, g2d);
 		//g2d.drawString("Score: ", 4, 12);
 		//nomDeImage = nomDeImageIcon.getImage();
 	}
 
 	
+
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
 		repaint(); //Affiche l'image
@@ -81,8 +88,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    int x=e.getX();
 	    int y=e.getY();
 	    System.out.println(x+","+y);//these co-ords are relative to the component
+	    
 	}
 
+	private void chargerImage() {
+		(new Carte()).chargerImage();
+		(new Epee(true)).chargerImage();
+	}
+	
 	@Override
 	public void mouseEntered(MouseEvent e) {}
 	@Override
@@ -91,4 +104,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public void mousePressed(MouseEvent e) {}
 	@Override
 	public void mouseReleased(MouseEvent e) {}
+	
+	/**
+	 * @return the carte
+	 */
+	public Carte getCarte() {
+		return carte;
+	}
 }
+
+
+

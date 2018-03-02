@@ -11,9 +11,9 @@ public class Carte extends ObjetAffichable{
 	 * 3 = case ou on peut passer normalement
 	 * 4 = case consommamt 2 points de mouvement pour se deplacer (Un personnage en a 2)
 	 */
-	public static int[][] carte = new int[10][15];
-	public static int numeroCarte;
-	private ImageIcon imageCarte;
+	private static int[][] carte = new int[10][15];
+	private static int numeroCarte;
+	private static ImageIcon imageCarte;
 
 	public Carte() {
 		super();
@@ -27,7 +27,7 @@ public class Carte extends ObjetAffichable{
 
 	@Override
 	public void chargerImage() {
-		
+		imageCarte = new ImageIcon("Sprite/Carte/Carte" + numeroCarte + ".png");
 	}
 	
 	@SuppressWarnings("unused")
@@ -35,24 +35,36 @@ public class Carte extends ObjetAffichable{
 		numeroCarte = nouveauNumeroCarte;
 		
 		imageCarte = new ImageIcon("Sprite/Carte/Carte" + numeroCarte + ".png");
+		
 		switch(numeroCarte) {
-		case 1:
-			break;
-		default: //On charge la premiere carte
-			int[][] carte ={{0,3,0,0,0,4,3,0,0,0,3,0,0,0,0},
-							{0,3,0,0,0,3,3,3,3,3,3,0,3,3,0},
-							{3,3,3,4,3,3,4,0,3,3,4,3,3,3,3},
-							{4,3,3,3,3,3,3,3,0,3,3,0,3,3,3},
-							{3,3,4,3,3,4,3,4,3,3,3,0,0,3,3},
-							{3,3,3,4,3,3,3,3,4,3,3,3,3,3,3},
-							{4,3,4,4,3,3,4,3,4,4,3,3,0,0,3},
-							{4,3,3,4,3,3,4,3,3,4,3,3,3,0,3},
-							{3,3,3,4,3,4,4,4,3,3,3,3,3,0,0},
-							{3,4,3,3,3,3,4,3,4,3,0,0,0,0,0}};
-			break;
+			case 1:
+				break;
+			default: //On charge la premiere carte
+				int[][] carteTemp ={{0,3,0,0,0,4,3,0,0,0,3,0,0,0,0},
+								{0,3,0,0,0,3,3,3,3,3,3,0,3,3,0},
+								{3,3,3,4,3,3,4,0,3,3,4,3,3,3,3},
+								{4,3,3,3,3,3,3,3,0,3,3,0,3,3,3},
+								{3,3,4,3,3,4,3,4,3,3,3,0,0,3,3},
+								{3,3,3,4,3,3,3,3,4,3,3,3,3,3,3},
+								{4,3,4,4,3,3,4,3,4,4,3,3,0,0,3},
+								{4,1,3,4,3,3,4,3,3,4,3,3,3,0,3},
+								{3,3,1,4,3,4,4,4,3,3,3,3,3,0,0},
+								{3,4,3,3,1,3,4,3,4,3,0,0,0,0,0}};		
+				carte = carteTemp;
+				break;
 		}
+
 	}
 	
+	public static void afficherCarteTerminal() {
+
+		for (int j = 0; j < carte.length; j++) {
+			for (int i = 0; i < carte[0].length; i++) {
+				System.out.print(carte[j][i] + " ");
+			}
+			System.out.println();
+		}
+	}
 
 	/**
 	 * @return the imageCarte
@@ -60,4 +72,14 @@ public class Carte extends ObjetAffichable{
 	public ImageIcon getImageCarte() {
 		return imageCarte;
 	}
+
+	/**
+	 * @return the carte
+	 */
+	public static int[][] getCarte() {
+		return carte;
+	}
 }
+
+
+
