@@ -21,7 +21,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private final int DELAY = 10; // Temps entre deux actualisation (en ms)
 
 	//SOUND
-	public Sound snd_loop = new Sound("");
+	//public Sound snd_loop = new Sound("");
 	/*
 	 * Chargement des images dans la mémoire
 	 * On charge ici les images utilisées par plusieurs instances d'objet ou celle qui servent dans cette classe
@@ -39,8 +39,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		setBackground(Color.WHITE);
 		timer = new Timer(DELAY,this); 
 		timer.start(); //Le timer démarre ici
-		snd_loop.play(); //Lance la musique
-		snd_loop.loop(); //Répète la musique lorsqu'elle est finie
+		//SOUND
+		//snd_loop.play(); //Lance la musique
+		//snd_loop.loop(); //Répète la musique lorsqu'elle est finie
 	}
 
 	@Override
@@ -53,6 +54,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private void doDrawing(Graphics g){ //méthode appelée pour mettre à jour l'affichage
 		Graphics2D g2d = (Graphics2D) g; //On cast g en graphics2D(bibliothèque Java) pour utiliser la méthode drawImage()
 		//g2d.drawImage(Image, x(zéro en haut à gauche), y(zéro en haut à gauche), le "component" où afficher l'image)
+		//g2d.drawString("Score: " + score, 64, 12);
 		//nomDeImage = nomDeImageIcon.getImage();
 	}
 
