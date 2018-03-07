@@ -3,7 +3,7 @@ import javax.swing.JFrame;
 @SuppressWarnings("serial")
 public class Application extends JFrame {
 	public static final double SCALE = 2.5;
-    public static int hauteur = (int) (160*SCALE), largeur = (int) (240*SCALE);
+    public static int hauteur = (int) ((171)*SCALE), largeur = (int) (240*SCALE);
     public static Board board = new Board();
 	
     public Application() {

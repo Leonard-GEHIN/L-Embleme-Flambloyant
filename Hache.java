@@ -20,19 +20,7 @@ public class Hache extends Personnage{
 	}
 
 	@Override
-	public void casesJouable() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void chargerImage() {
 		// TODO Auto-generated method stub
 		
 	}

@@ -1,22 +1,14 @@
-import java.awt.Graphics2D;
-
 import javax.swing.ImageIcon;
 
-public class Epee extends Personnage{
-	
+public class Epee extends Personnage{	
 	public Epee (boolean personnageJoueur) {
 		super(personnageJoueur);
 		/*
 		 * Variable a modifier sur chaque classe
 		 */
-		ratioPointsDeVie = 0.50;
-		ratioAttaque = 0.30;
-		ratioDefence = 1 - ratioAttaque - ratioPointsDeVie;
-		String classe = "Epee";
 		int pointsTotal = Methode.nombreAlea(50, 55);
 		
 		int pointsRestant = pointsTotal;
-		String nom = "Manieur epee";
 		//TODO generation des noms
 		
 		//Generation des stat du personnage
@@ -30,11 +22,37 @@ public class Epee extends Personnage{
 		this.pointsDeVie = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioPointsDeVie);
 		pointsRestant -= this.pointsDeVie;
 		nombreStatRestanteACalcule--;
-		this.classe = classe;
-		this.nom = nom;
+		this.nom = this.genererNom();
+		
+		System.out.println("Epee genere : "+this.nom);
 	}
-
 	
+	public static void chargerClasse() {
+		//Variables static
+		classe = "Epee";
+		ratioPointsDeVie = 0.50;
+		ratioAttaque = 0.30;
+		ratioDefence = 1 - ratioAttaque - ratioPointsDeVie;
+		
+		String[] tabTempNom = {"Shiida", "Lyndis", "Fir", "Hana"};
+		tabGenerationNom = tabTempNom;
+		
+		imageVictoire = new ImageIcon(classe + "/victoire.png");
+		
+		//Image debout
+		for (int i = 0; i < imageDebout.length; i++) {
+			imageDebout[i] = new ImageIcon("Sprite/" + classe + "/debout "+ i + ".png");
+		}
+		
+		//Image de mouvement
+		String[] ordreImage = {"droite", "haut", "gauche", "bas"};
+		for (int j = 0; j < imageMouvement.length; j++) {
+			for (int i = 0; i < imageMouvement[j].length; i++) {
+				imageMouvement[j][i] = new ImageIcon("Sprite/" + classe + "/" + ordreImage[j] + " "+ i + ".png");
+			}	
+		}
+		System.out.println("Classe Epee Charger.");
+	}
 	
 	
 	@Override
@@ -48,10 +66,10 @@ public class Epee extends Personnage{
 		// TODO Auto-generated method stub
 		
 	}
-
-	@Override
-	public void casesJouable() {
-		// TODO Auto-generated method stub
-		
-	}
 }
+
+
+
+
+
+
