@@ -20,13 +20,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
 	//private Ennemi ennemi = new Ennemi();
-	private boolean personnageSelectionner = false, tourEnnemi = false;
+	private boolean personnageSelectionner = false, tourEnnemi = false, enJeu = false;
 	public static boolean animationEnCours = false;
 	private int indicePersonnageSelectionner;
 	
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int DELAY_IMAGE = 50; // Temps entre deux d'image (en ms)
+	private final int IMAGE_PAR_SECONDE_VOULU = 5; // Nombre d'image par seconde souhaite (20 = bonne qualite)
+	private final int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
 	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
 	private int nombreImageParSeconde = 0, imagePasseSansUpdate = 0;
@@ -82,29 +83,33 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//ennemi.dessiner(this, g2d);
 
 		//g2d.drawString("Score: ", 4, 12);
+		this.enJeu = true;
 	}
 
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
-		this.imagePasseSansUpdate++;
-		if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
-			joueur.update();
-			this.imagePasseSansUpdate = 0;
-		}
-		
-		//Action de jeu
-		if(!animationEnCours) {
-			//Echange les tour des intelligences
-			if(joueur.ATerminerSonTour()) {
-				tourEnnemi = true;
-				//ennemi.debutTour();
+		if(enJeu) {
+			this.imagePasseSansUpdate++;
+			if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
+				joueur.update();
+				this.imagePasseSansUpdate = 0;
 			}
-			/*
-			else if(ennemi.ATerminerSonTour()) {
-				tourEnnemi = false;
-				//joueur.debutTour();
+			
+			//Action de jeu
+			if(!animationEnCours) {
+				//Echange les tour des intelligences
+				if(joueur.ATerminerSonTour() && !tourEnnemi) {
+					System.out.println("C'est maintenant le tour des ennemis");
+					tourEnnemi = true;
+					//ennemi.debutTour();
+				}
+				/*
+				else if(ennemi.ATerminerSonTour() %% tourEnnemi) {
+					tourEnnemi = false;
+					//joueur.debutTour();
+				}
+				*/
 			}
-			*/
 		}
 		repaint(); //Affiche l'image
 	}
@@ -130,8 +135,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    int y=(int)(e.getY()/(Application.SCALE * 16));
 	    int caseCibleIndice = -1;
 	    System.out.println(x+", "+y);
-
-	    if(!tourEnnemi && !animationEnCours) {
+	    if(!tourEnnemi && !animationEnCours && enJeu) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
 	    	//Le joueur essaye de selectionner son personnage
 	    	caseCibleIndice = joueur.selectionPersonnage(x, y);
@@ -143,7 +147,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    	}
 	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
 		    //Le joueur deplace son personnage, il ne vise pas un de ses personnage et il a un personnage selectionne
-		    	
 		    	//caseCibleIndice = ennemi.selectionPersonnage(x, y);
 		    	caseCibleIndice = -1; //Simulation que l'ennemi n'est pas la
 		    	if(caseCibleIndice == -1) {
@@ -160,12 +163,11 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		    		//Si aucune case valide n'est selectionner
 		    			indicePersonnageSelectionner = -1;
 		    			personnageSelectionner = false;
-		    			Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);
-		    		}
+		    			Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);		    		}
 		    	}
-		    }
-		    else {
-		    	
+		    	else {
+				    //Le joueur vise un ennemi
+		    	}
 		    }
 	    }
 	}

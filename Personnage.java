@@ -130,27 +130,49 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	public void caseJouable() {
 		int[][] carte = Carte.getCarte();
-		int profondeur = 3;
+		int profondeur = 4;
 		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
 	}
 	
 	
 	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
 		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
-			//Les arbres consomme deux point de mouvements
-			if(carte[y][x] != 10 && profondeur >= 0) {
-			//Si la case n'a pas ete visite
-				profondeur--;
-				carte[y][x] = 10; //On valide la case
-				if(carte[y][x] != 0) {
-				//La case est libre, on l'ajoute au caseJouable
-					int [] temptab = {x, y};
-					Case.ajouterValeur(temptab);
-					this.caseJouableRecursif(x - 1, y, profondeur, carte);
-					this.caseJouableRecursif(x + 1, y, profondeur, carte);
-					this.caseJouableRecursif(x, y + 1, profondeur, carte);
-					this.caseJouableRecursif(x, y - 1, profondeur, carte);
+			int profondeurConsomee = 0;
+			switch(carte[y][x]){
+				case 3: //case normal
+					profondeurConsomee = 1;
+					break;
+				case 4: //Case d'arbre
+					profondeurConsomee = 2;
+					break;
+				case 10: //Case valide
+					profondeurConsomee = 100;
+					break;
+				case 0: //case vide
+					profondeurConsomee = 100;
+					break;
+			}
+			for (int i = 0; i < carte.length; i++) {
+				for (int j = 0; j < carte[i].length; j++) {
+					System.out.print(carte[i][j] + " ");
 				}
+				System.out.println();
+			}
+			System.out.println();
+			
+			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
+			profondeur-=profondeurConsomee;
+			//Les arbres consomme deux point de mouvements
+			if(profondeur > 0) {
+			//Si la case n'a pas ete visite
+				carte[y][x] = 10; //On valide la case
+				
+				int [] temptab = {x, y};
+				Case.ajouterValeur(temptab);
+				this.caseJouableRecursif(x - 1, y, profondeur, carte);
+				this.caseJouableRecursif(x + 1, y, profondeur, carte);
+				this.caseJouableRecursif(x, y + 1, profondeur, carte);
+				this.caseJouableRecursif(x, y - 1, profondeur, carte);
 			}
 		}
 	}

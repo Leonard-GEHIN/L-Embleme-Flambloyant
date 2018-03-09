@@ -4,11 +4,12 @@ import javax.swing.ImageIcon;
 
 public class Carte extends ObjetAffichable {
 	/*
-	 * Valeur des cases dans les cartes: 0 = case impassable 1 = case d'apparition
-	 * des allies (Se transforme ensuite en case de type 3) 2 = case d'apparition
-	 * des ennemis (Se transforme ensuite en case de type 3) 3 = case ou on peut
-	 * passer normalement 4 = case consommamt 2 points de mouvement pour se deplacer
-	 * (Un personnage en a 2)
+	 * Valeur des cases dans les cartes:
+	 * 0 = case impassable 
+	 * 1 = case d'apparition des allies (Se transforme ensuite en case de type 3) 
+	 * 2 = case d'apparition des ennemis (Se transforme ensuite en case de type 3) 
+	 * 3 = case ou on peut passer normalement 
+	 * 4 = case consommamt 2 points de mouvement pour se deplacer (Un personnage en a 2)
 	 */
 
 	private static int[][] carte = new int[10][15];
