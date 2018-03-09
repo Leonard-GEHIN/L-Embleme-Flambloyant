@@ -27,13 +27,9 @@ public abstract class Intelligence extends ObjetAffichable{
 		}
 	}
 	
-	public void deplacerPersonnage(int caseX, int caseY, int indicePersonnage) {
-		//TODO deplacerPersonnage()
-	}
-	
 	public void update() {
 		for (Personnage personnage : personnages) {
-			personnage.update();
+			if(!personnage.isEstEnMouvement()) personnage.update();
 		}
 	}
 
@@ -42,7 +38,7 @@ public abstract class Intelligence extends ObjetAffichable{
 		boolean rechercheFinie = false;
 
 		while( i < personnages.size() && !rechercheFinie ) {
-			if(personnages.get(i).estPresent(x, y)) {
+			if(personnages.get(i).estPresent(x, y) && !personnages.get(i).isaJouer()) {
 				// Il y a un seul personnage sur une case, pas besoin d'arreter le for()
 				retour = i;
 				rechercheFinie = true;

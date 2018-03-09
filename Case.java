@@ -10,7 +10,7 @@ public class Case extends ObjetAffichable {
 	 * 3 = case ennemi
 	 */
 	
-	protected int[][] carteCase = new int[10][15];
+	protected static int[][] carteCase = new int[10][15];
 	protected static ImageIcon imageCaseMouvement;
 	protected static ImageIcon imageCaseAllie;
 	protected static ImageIcon imageCaseEnnemi;
@@ -46,24 +46,24 @@ public class Case extends ObjetAffichable {
 		}
 	}
 
-	private void reinitialiserCases() {
+	private static void reinitialiserCases() {
 		while(!caseJouable.isEmpty()) {
 			caseJouable.remove(0);
 		}
-		for (int i = 0; i < this.carteCase.length; i++) {
-			for (int j = 0; j < this.carteCase[i].length; j++) {
-				this.carteCase[i][j] = 0;
+		for (int i = 0; i < carteCase.length; i++) {
+			for (int j = 0; j < carteCase[i].length; j++) {
+				carteCase[i][j] = 0;
 			}
 		}
 	}
 
 	//Utiliser a chaque mouvement et chaque clic
-	public void genererCarte(Intelligence joueur/*, Intelligence ennemi*/, int indicePersonnageSelectionner) {
-		this.reinitialiserCases();
+	public static void genererCarte(Intelligence joueur/*, Intelligence ennemi*/, int indicePersonnageSelectionner) {
+		reinitialiserCases();
 		
 		//si indicePersonnageSelectionner vaut -1, aucun personnage n'est selectionner
 		if(indicePersonnageSelectionner > -1)
-			joueur.getPersonnages().get(indicePersonnageSelectionner).caseJouable(this);
+			joueur.getPersonnages().get(indicePersonnageSelectionner).caseJouable();
 		
 		if(!caseJouable.isEmpty()) {
 			for (int[] caseJouables : caseJouable) {
@@ -82,25 +82,14 @@ public class Case extends ObjetAffichable {
 		}
 		*/
 		
-		this.afficherCarteTerminal();
-	}
-	
-	public int tailleEffective(int[][] caseJouable) {
-		int taille = 0;
-		for (int i = 0; i < caseJouable.length; i++) {
-			if(caseJouable[i][0] == -1 && caseJouable[i][1] == -1) {
-				taille++;
-			}
-		}
-		
-		return taille;
+		afficherCarteTerminal();
 	}
 
-	public void afficherCarteTerminal() {
+	public static void afficherCarteTerminal() {
 		System.out.println();
-		for (int j = 0; j < this.carteCase.length; j++) {
-			for (int i = 0; i < this.carteCase[0].length; i++) {
-				System.out.print(this.carteCase[j][i] + " ");
+		for (int j = 0; j < carteCase.length; j++) {
+			for (int i = 0; i < carteCase[0].length; i++) {
+				System.out.print(carteCase[j][i] + " ");
 			}
 			System.out.println();
 		}
@@ -113,10 +102,31 @@ public class Case extends ObjetAffichable {
 	}
 
 
-	public void ajouterValeur(int[] temptab) {
+	public static void ajouterValeur(int[] temptab) {
 		caseJouable.add(temptab);
 	}
+	
+	public static boolean estCaseValidePourDeplacement(int x, int y) {
+		boolean estCaseValidePourDeplacementRetour = false;
+		
+		for (int[] is : caseJouable) {
+			if(x == is[0] && y == is[1]) {
+			//Si la case teste est dans cet arrayList, alors la case est valide
+				estCaseValidePourDeplacementRetour = true;
+			}
+		}
+		
+		return estCaseValidePourDeplacementRetour;
+	}
 }
+
+
+
+
+
+
+
+
 
 
 

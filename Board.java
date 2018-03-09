@@ -16,13 +16,12 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener, MouseListener {
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int DELAY = 500; // Temps entre deux actualisation (en ms)
-	private Carte carte;
-	private Joueur joueur = new Joueur();
+	private final int DELAY = 350; // Temps entre deux actualisation (en ms)
+	private static Carte carte;
+	protected static Joueur joueur = new Joueur();
 	//private Ennemi ennemi = new Ennemi();
 	private boolean personnageSelectionner = false, tourEnnemi = false;
 	private int indicePersonnageSelectionner;
-	private Case caseJouables;
 	
 	//SOUND
 	//public Sound snd_loop = new Sound("");
@@ -46,13 +45,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 		//Initialise mes variables
 		chargerClasse();
-		this.caseJouables = new Case();
 		carte = new Carte();
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
 		Carte.afficherCarteTerminal();
-		caseJouables.genererCarte(joueur, -1);
+		Case.genererCarte(joueur, -1);
 	}
 
 	@Override
@@ -66,7 +64,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private void doDrawing(Graphics g){ 
 		Graphics2D g2d = (Graphics2D) g; //On cast g en graphics2D(bibliothèque Java) pour utiliser la méthode drawImage()
 		carte.dessiner(this, g2d);
-		caseJouables.dessiner(this, g2d);
+		(new Case()).dessiner(this, g2d);
 		joueur.dessiner(this, g2d);
 		//ennemi.dessiner(this, g2d); // l'ennemi s'affiche apres le joueur pour qu'il recouvre les casesJouables
 
@@ -104,27 +102,39 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    System.out.println(x+", "+y);
 
 	    if(!tourEnnemi) {
-	    //Tour du joueur
-		    if(personnageSelectionner) {
-		    //Le joueur deplace son personnage
+	    //Les cliques durant le tour ennemi n'ont aucuns effets
+	    	//Le joueur essaye de selectionner son personnage
+	    	caseCibleIndice = joueur.selectionPersonnage(x, y);
+	    	if(caseCibleIndice > -1) {
+	    	//Si le joueur clique sur un de ses personnage
+	    		indicePersonnageSelectionner = caseCibleIndice;
+	    		Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);
+	    		personnageSelectionner = true;
+	    	}
+	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
+		    //Le joueur deplace son personnage, il ne vise pas un de ses personnage et il a un personnage selectionne
+		    	
 		    	//caseCibleIndice = ennemi.selectionPersonnage(x, y);
-		    	if(caseCibleIndice > -1) {
-		    	//Si un personnage est trouve, on regarde si le joueur peut l'attaquer
-		    		
-		    	}
-		    	else {
-		    	//Une case vide est cible par le joueur
-		    		
+		    	caseCibleIndice = -1; //Simulation que l'ennemi n'est pas la
+		    	if(caseCibleIndice == -1) {
+		    	//Aucun ennemi n'est sur la case
+		    		if(Case.estCaseValidePourDeplacement(x, y)) {
+		    			//Le joueur se deplace
+		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
+		    			//Deselectionne ensuite le joueur
+		    			indicePersonnageSelectionner = -1;
+		    			personnageSelectionner = false;
+		    		}
+		    		else{
+		    		//Si aucune case valide n'est selectionner
+		    			indicePersonnageSelectionner = -1;
+		    			personnageSelectionner = false;
+		    			Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);
+		    		}
 		    	}
 		    }
 		    else {
-		    //Le joueur essaye de selectionner son personnage
-		    	caseCibleIndice = joueur.selectionPersonnage(x, y);
-		    	if(caseCibleIndice > -1) {
-		    	//Si le joueur clique sur un de ses personnage
-		    		indicePersonnageSelectionner = caseCibleIndice;
-		    		caseJouables.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);
-		    	}
+		    	
 		    }
 	    }
 	}

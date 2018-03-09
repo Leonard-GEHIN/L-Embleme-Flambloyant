@@ -1,12 +1,23 @@
 import java.awt.Graphics2D;
-import javax.swing.ImageIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public abstract class Personnage extends ObjetAffichable{
+import javax.swing.ImageIcon;
+import javax.swing.Timer;
+
+public abstract class Personnage extends ObjetAffichable implements ActionListener{
+	protected int DELAY = 40;
+	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
+	protected final int tempsParcourUneCase = 500; //Duree en miliseconde pour la traverse d'une case
+	
 	protected double defence, pointsDeVie, attaque;
 	protected String nom;
 	protected boolean aJouer = false, estEnMouvement = false, estAllie;
 	protected int directionMouvement = 0, compteurSkin = 0;
-	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0;
+	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, distanceAPourcourir = 0, tickAnimationUtilise = 0;
+	protected double vitesseX, vitesseY; // en px/ms
+	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
+	
 	
 	//Variables de classe chargees dans la methode static chargerClasse()
 	//Variables servant a calculer les statistiques des personnages
@@ -14,14 +25,14 @@ public abstract class Personnage extends ObjetAffichable{
 	protected static double ratioDefence;
 	protected static double ratioPointsDeVie;
 	
-	
 	protected static String[] tabGenerationNom = new String[4];
 	protected static String classe;
 
 	protected static ImageIcon imageVictoire;
 	protected static ImageIcon[] imageDebout = new ImageIcon[3];
-	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][5];
+	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][4];
 
+	
 	//Constructeur utiliser dans les enfants
 	public Personnage(boolean personnageJoueur) {
 		//Position initiale
@@ -47,12 +58,20 @@ public abstract class Personnage extends ObjetAffichable{
 		System.out.println("Position personnage : " + caseX + " " + caseY);
 	}
 
+	
 	public abstract void attaque();
+	
 
+	public void meurt() {
+		//TODO methode meurt()
+	}
+
+	
 	//Donne un nom au personnage en fonction de sa classe
 	public String genererNom() {
 		return  tabGenerationNom[Methode.nombreAlea(0, 3)];
 	}
+	
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
@@ -65,11 +84,13 @@ public abstract class Personnage extends ObjetAffichable{
 			image = imageDebout[this.compteurSkin];
 
 		//Affiche les images
+		//les variables offsetMouvement sert a animer les personnages
 		g2d.drawImage(image.getImage(),
-				(int)(sc*(16*caseX)-16), (int)(sc*(16*caseY)-16),
+				(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY),
 				(int)(sc*31), (int)(sc*31),
 				board);
 	}
+	
 	
 	public void update() {
 		if(estEnMouvement)
@@ -78,10 +99,7 @@ public abstract class Personnage extends ObjetAffichable{
 			compteurSkin = ( compteurSkin + 1 ) % imageDebout.length;
 	}
 
-	public void meurt() {
-		//TODO methode meurt()
-	}
-
+	
 	public int generationStat(int statTotal, int statRestant, int nombreStatRestanteACalcule, double ratio) {
 		int stat;
 		
@@ -106,13 +124,15 @@ public abstract class Personnage extends ObjetAffichable{
 		return retour;
 	}
 	
-	public void caseJouable(Case tabCase) {
+	
+	public void caseJouable() {
 		int[][] carte = Carte.getCarte();
 		int profondeur = 2;
-		this.caseJouableRecursif(caseX, caseY, profondeur, carte, tabCase);
+		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
 	}
 	
-	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte, Case tabCase) {
+	
+	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
 		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
 			if(carte[y][x] != 10 && profondeur >= 0) {
 			//Si la case n'a pas ete visite
@@ -121,13 +141,115 @@ public abstract class Personnage extends ObjetAffichable{
 				if(carte[y][x] != 0) {
 				//La case est libre, on l'ajoute au caseJouable
 					int [] temptab = {x, y};
-					tabCase.ajouterValeur(temptab);
-					this.caseJouableRecursif(x - 1, y, profondeur, carte, tabCase);
-					this.caseJouableRecursif(x + 1, y, profondeur, carte, tabCase);
-					this.caseJouableRecursif(x, y + 1, profondeur, carte, tabCase);
-					this.caseJouableRecursif(x, y - 1, profondeur, carte, tabCase);
+					Case.ajouterValeur(temptab);
+					this.caseJouableRecursif(x - 1, y, profondeur, carte);
+					this.caseJouableRecursif(x + 1, y, profondeur, carte);
+					this.caseJouableRecursif(x, y + 1, profondeur, carte);
+					this.caseJouableRecursif(x, y - 1, profondeur, carte);
 				}
 			}
+		}
+	}
+
+
+	public void deplacer(int nouvelleCaseX, int nouvelleCaseY) {
+		this.estEnMouvement = true;
+		this.nouvelleCaseX = nouvelleCaseX;
+		this.nouvelleCaseY = nouvelleCaseY;
+		//On utilise des nouveau nom de variable pour plus de clarete dans la suite de la methode
+		int vecteurDeplacementX =  this.nouvelleCaseX - this.caseX;
+		int vecteurDeplacementY =  this.nouvelleCaseY - this.caseY;
+		this.distanceAPourcourir = vecteurDeplacementX + vecteurDeplacementY;
+		
+		double rapportVecteur = 2;
+		try { //Gere le cas ou on ne se deplace pas en Y
+			rapportVecteur = vecteurDeplacementX / vecteurDeplacementY;
+		} catch (ArithmeticException e) {
+			rapportVecteur = 2;
+		}
+		
+		if(Math.abs(rapportVecteur) > 1) {
+		//vectX > vectY
+		//Donc deplacement horizontal, on regarde la quantite de deplacement en X
+			if(vecteurDeplacementX > 0) {
+				this.directionMouvement = 0;
+			}
+			else {
+				this.directionMouvement = 2;				
+			}
+		}
+		else {
+		//Deplacement Vertical donc on regarde la quantite de deplacement en Y
+			if(vecteurDeplacementY > 0) {
+				this.directionMouvement = 1;
+			}
+			else {
+				this.directionMouvement = 3;
+			}
+		}
+
+		System.out.println("vecteur deplacement: "+ vecteurDeplacementX+" "+ vecteurDeplacementY + " dir:" +this.directionMouvement);
+		
+		//Calcul vitesse
+		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase; // en miliseconde
+		double distanceAPourcourirPixelX = vecteurDeplacementX*16*Application.SCALE;
+		double distanceAPourcourirPixelY = vecteurDeplacementY*16*Application.SCALE;
+		this.vitesseX = distanceAPourcourirPixelX / tempsAnimation;
+		this.vitesseY = distanceAPourcourirPixelY / tempsAnimation;
+		
+		timer_pas.start();
+		this.aJouer = true;
+	}
+	
+	
+	@Override
+	public void actionPerformed(ActionEvent e) { //actualise l'animation du joueur
+		boolean finAnimation = false;
+		int tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase;// en miliseconde
+		if(this.estEnMouvement) {
+			this.offsetMouvementX += this.vitesseX*this.DELAY;
+			this.offsetMouvementY += this.vitesseY*this.DELAY;
+			
+			if((int)(tempsAnimation / this.DELAY) < tickAnimationUtilise) {
+				finAnimation = true;
+			}
+			
+			if(this.tickAnimationUtilise%(int)(300 / DELAY) == 0) {
+				this.compteurSkin = (this.compteurSkin+1)%4;
+			}
+			
+			this.tickAnimationUtilise++;
+		}
+		
+		if(finAnimation) {
+		//Variable a reinitialiser a la fin d'une animation
+			if(this.estEnMouvement) {
+			//On actualise la position du personnage a la fin du mouvement
+				this.caseX = this.nouvelleCaseX;
+				this.caseY = this.nouvelleCaseY;
+				
+			}
+			
+			
+			this.distanceAPourcourir = 0;
+			this.vitesseX = 0;
+			this.vitesseY = 0;
+			this.offsetMouvementX = 0;
+			this.offsetMouvementY = 0;
+			this.compteurSkin = 0;
+			this.directionMouvement = 0;
+			this.estEnMouvement = false;
+			this.tickAnimationUtilise = 0;
+			this.nouvelleCaseX = 0;
+			this.nouvelleCaseY = 0;
+			this.timer_pas.stop();
+
+			Case.genererCarte(Board.joueur/*, ennemi*/, -1);
+			/*
+			//Pour porter une attaque
+			//On peut  faire une variale vaAttaquer et une variable cible
+			this.attaque(ennemi); //Qui declenche l'anim d'attaque
+			*/
 		}
 	}
 	
@@ -263,4 +385,5 @@ public abstract class Personnage extends ObjetAffichable{
 	public void setCaseY(int caseY) {
 		this.caseY = caseY;
 	}
+
 }
