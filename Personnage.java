@@ -5,20 +5,25 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
+import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
+
 public abstract class Personnage extends ObjetAffichable implements ActionListener{
 	protected int DELAY = 40;
-	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
 	protected final int tempsParcourUneCase = 500; //Duree en miliseconde pour la traverse d'une case
+	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
 	
 	protected double defence, pointsDeVie, attaque;
 	protected String nom;
 	protected boolean aJouer = false, estEnMouvement = false, estAllie;
+	
+	//Utilise pour mouvement et animation
+	protected double distanceAPourcourir = 0;
 	protected int directionMouvement = 0, compteurSkin = 0;
-	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, distanceAPourcourir = 0, tickAnimationUtilise = 0;
+	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0;
 	protected double vitesseX, vitesseY; // en px/ms
 	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
 	
-	
+
 	//Variables de classe chargees dans la methode static chargerClasse()
 	//Variables servant a calculer les statistiques des personnages
 	protected static double ratioAttaque;
@@ -159,7 +164,6 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		//On utilise des nouveau nom de variable pour plus de clarete dans la suite de la methode
 		int vecteurDeplacementX =  this.nouvelleCaseX - this.caseX;
 		int vecteurDeplacementY =  this.nouvelleCaseY - this.caseY;
-		this.distanceAPourcourir = vecteurDeplacementX + vecteurDeplacementY;
 		
 		double rapportVecteur = 2;
 		try { //Gere le cas ou on ne se deplace pas en Y
@@ -171,47 +175,52 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		if(Math.abs(rapportVecteur) > 1) {
 		//vectX > vectY
 		//Donc deplacement horizontal, on regarde la quantite de deplacement en X
-			if(vecteurDeplacementX > 0) {
+			if(vecteurDeplacementX > 0) { // Vers la droite
 				this.directionMouvement = 0;
 			}
-			else {
+			else { // Vers la gauche
 				this.directionMouvement = 2;				
 			}
 		}
 		else {
 		//Deplacement Vertical donc on regarde la quantite de deplacement en Y
-			if(vecteurDeplacementY > 0) {
+			if(vecteurDeplacementY < 0) { //Vers le haut
 				this.directionMouvement = 1;
 			}
-			else {
+			else { //Vers le bas
 				this.directionMouvement = 3;
 			}
 		}
-
-		System.out.println("vecteur deplacement: "+ vecteurDeplacementX+" "+ vecteurDeplacementY + " dir:" +this.directionMouvement);
 		
 		//Calcul vitesse
+		this.distanceAPourcourir = Math.sqrt( Math.pow(vecteurDeplacementX,2) + Math.pow(vecteurDeplacementY,2) );
 		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase; // en miliseconde
 		double distanceAPourcourirPixelX = vecteurDeplacementX*16*Application.SCALE;
 		double distanceAPourcourirPixelY = vecteurDeplacementY*16*Application.SCALE;
 		this.vitesseX = distanceAPourcourirPixelX / tempsAnimation;
 		this.vitesseY = distanceAPourcourirPixelY / tempsAnimation;
-		
+
+
 		timer_pas.start();
 		this.aJouer = true;
+
+		System.out.println("vecteur deplacement: "+ vecteurDeplacementX+" "+ vecteurDeplacementY + " dir:" +this.directionMouvement);
 	}
-	
-	
+
+
 	@Override
 	public void actionPerformed(ActionEvent e) { //actualise l'animation du joueur
+		System.out.println("Animation en cours");
 		boolean finAnimation = false;
-		int tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase;// en miliseconde
+		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase;// en miliseconde
 		if(this.estEnMouvement) {
 			this.offsetMouvementX += this.vitesseX*this.DELAY;
 			this.offsetMouvementY += this.vitesseY*this.DELAY;
-			
-			if((int)(tempsAnimation / this.DELAY) < tickAnimationUtilise) {
+			System.out.println("tempsAnim :" + tempsAnimation + " delay:"+this.DELAY);
+			System.out.println("tickAnimationUtilise: " + this.tickAnimationUtilise);
+			if((int)(tempsAnimation / this.DELAY) < this.tickAnimationUtilise) {
 				finAnimation = true;
+				System.out.println("Fin animation activer");
 			}
 			
 			if(this.tickAnimationUtilise%(int)(300 / DELAY) == 0) {
