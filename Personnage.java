@@ -5,11 +5,9 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
-import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
-
 public abstract class Personnage extends ObjetAffichable implements ActionListener{
 	protected int DELAY = 40;
-	protected final int tempsParcourUneCase = 500; //Duree en miliseconde pour la traverse d'une case
+	protected final int tempsParcourUneCase = 300; //Duree en miliseconde pour la traverse d'une case
 	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
 	
 	protected double defence, pointsDeVie, attaque;
@@ -18,7 +16,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	//Utilise pour mouvement et animation
 	protected double distanceAPourcourir = 0;
-	protected int directionMouvement = 0, compteurSkin = 0;
+	protected int directionMouvement = 0, compteurSkin = Methode.nombreAlea(0, 3);
 	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0;
 	protected double vitesseX, vitesseY; // en px/ms
 	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
@@ -200,30 +198,24 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.vitesseX = distanceAPourcourirPixelX / tempsAnimation;
 		this.vitesseY = distanceAPourcourirPixelY / tempsAnimation;
 
-
 		timer_pas.start();
 		this.aJouer = true;
-
-		System.out.println("vecteur deplacement: "+ vecteurDeplacementX+" "+ vecteurDeplacementY + " dir:" +this.directionMouvement);
 	}
 
 
 	@Override
 	public void actionPerformed(ActionEvent e) { //actualise l'animation du joueur
-		System.out.println("Animation en cours");
 		boolean finAnimation = false;
 		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase;// en miliseconde
 		if(this.estEnMouvement) {
 			this.offsetMouvementX += this.vitesseX*this.DELAY;
 			this.offsetMouvementY += this.vitesseY*this.DELAY;
-			System.out.println("tempsAnim :" + tempsAnimation + " delay:"+this.DELAY);
-			System.out.println("tickAnimationUtilise: " + this.tickAnimationUtilise);
+
 			if((int)(tempsAnimation / this.DELAY) < this.tickAnimationUtilise) {
 				finAnimation = true;
-				System.out.println("Fin animation activer");
 			}
 			
-			if(this.tickAnimationUtilise%(int)(300 / DELAY) == 0) {
+			if(this.tickAnimationUtilise%(int)(160 / DELAY) == 0) {
 				this.compteurSkin = (this.compteurSkin+1)%4;
 			}
 			

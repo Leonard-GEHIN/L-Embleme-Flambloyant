@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 
@@ -22,7 +23,12 @@ public class Case extends ObjetAffichable {
 	public void dessiner(Board board, Graphics2D g2d) {
 		double sc = Application.SCALE;
 		ImageIcon image = null;
-		
+		/*
+		float[] scales = {1f, 1f, 1f, 0.1f};
+		float[] offsets = new float[4];
+		RescaleOp rop = new RescaleOp(scales, offsets, null);
+		*/
+		Color couleur = new Color(Color.TRANSLUCENT); //Sert a mettre de la transparence pour l'image
 		for (int i = 0; i < carteCase.length; i++) {
 			for (int j = 0; j < carteCase[i].length; j++) {
 				if(carteCase[i][j] != 0) {
@@ -40,7 +46,7 @@ public class Case extends ObjetAffichable {
 					g2d.drawImage(image.getImage(),
 							(int)(sc*(16*j)), (int)(sc*(16*i)),
 							(int)(sc*15), (int)(sc*15),
-							board);
+							couleur, board);
 				}
 			}
 		}
@@ -81,8 +87,6 @@ public class Case extends ObjetAffichable {
 			}
 		}
 		*/
-		
-		afficherCarteTerminal();
 	}
 
 	public static void afficherCarteTerminal() {

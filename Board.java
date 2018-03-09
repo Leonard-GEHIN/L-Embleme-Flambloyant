@@ -16,12 +16,17 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener, MouseListener {
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int DELAY = 350; // Temps entre deux actualisation (en ms)
+	private final int DELAY_IMAGE = 50; // Temps entre deux d'image (en ms)
+	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
 	//private Ennemi ennemi = new Ennemi();
 	private boolean personnageSelectionner = false, tourEnnemi = false;
 	private int indicePersonnageSelectionner;
+	
+	//Horloge
+	private double tempsTemp = System.currentTimeMillis();
+	private int nombreImageParSeconde = 0, imagePasseSansUpdate = 0;
 	
 	//SOUND
 	//public Sound snd_loop = new Sound("");
@@ -37,7 +42,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		
 		setFocusable(true); //Permet de pouvoir mettre la fenêtre en premier-plan 
 		setBackground(Color.WHITE);
-		timer = new Timer(DELAY,this); 
+		timer = new Timer(DELAY_IMAGE,this); 
 		timer.start(); //Le timer démarre ici
 		//SOUND
 		//snd_loop.play(); //Lance la musique
@@ -58,6 +63,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		super.paintComponent(g);
 		doDrawing(g);
 		Toolkit.getDefaultToolkit().sync(); //Nécessaire au fonctionnement de swing
+		
+		//Calcul et affiche le nombre d'image par seconde
+		this.nombreImageParSeconde++;
+		if(System.currentTimeMillis() - this.tempsTemp > 1000) {
+			Application.ex.setTitle(Application.titreFenetre + " | IPS: " + this.nombreImageParSeconde);
+			this.tempsTemp = System.currentTimeMillis();
+			this.nombreImageParSeconde = 0;
+		}
 	}
 
 	//méthode appelée pour mettre à jour l'affichage
@@ -74,8 +87,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
-		joueur.update();
-		//On calcul ici la grille ou le perso selectionner peut aller
+		this.imagePasseSansUpdate++;
+		if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
+			joueur.update();
+			this.imagePasseSansUpdate = 0;
+		}
+		
 		repaint(); //Affiche l'image
 	}
 
