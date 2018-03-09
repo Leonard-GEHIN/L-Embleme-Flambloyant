@@ -15,25 +15,24 @@ import javax.swing.Timer;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener, MouseListener {
-	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int DELAY_IMAGE = 50; // Temps entre deux d'image (en ms)
-	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
+	
+	//Attribut relative au element de jeu
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
 	//private Ennemi ennemi = new Ennemi();
 	private boolean personnageSelectionner = false, tourEnnemi = false;
+	public static boolean animationEnCours = false;
 	private int indicePersonnageSelectionner;
 	
-	//Horloge
+	//Attribut relative au temps
+	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
+	private final int DELAY_IMAGE = 50; // Temps entre deux d'image (en ms)
+	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
 	private int nombreImageParSeconde = 0, imagePasseSansUpdate = 0;
 	
-	//SOUND
+	//Attribut de son
 	//public Sound snd_loop = new Sound("");
-	/*
-	 * Chargement des images dans la mémoire
-	 * On charge ici les images utilisées par plusieurs instances d'objet ou celle qui servent dans cette classe
-	 */
 	
 	public Board() {
 		addKeyListener(new TAdapter()); //Active l'écoute des touches du clavier
@@ -64,9 +63,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		doDrawing(g);
 		Toolkit.getDefaultToolkit().sync(); //Nécessaire au fonctionnement de swing
 		
-		//Calcul et affiche le nombre d'image par seconde
+		//Calcul et affiche le nombre d'image par seconde (IPS)
 		this.nombreImageParSeconde++;
 		if(System.currentTimeMillis() - this.tempsTemp > 1000) {
+		//Chaque seconde, on met a jour les IPS
 			Application.ex.setTitle(Application.titreFenetre + " | IPS: " + this.nombreImageParSeconde);
 			this.tempsTemp = System.currentTimeMillis();
 			this.nombreImageParSeconde = 0;
@@ -79,10 +79,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		carte.dessiner(this, g2d);
 		(new Case()).dessiner(this, g2d);
 		joueur.dessiner(this, g2d);
-		//ennemi.dessiner(this, g2d); // l'ennemi s'affiche apres le joueur pour qu'il recouvre les casesJouables
+		//ennemi.dessiner(this, g2d);
 
 		//g2d.drawString("Score: ", 4, 12);
-		//nomDeImage = nomDeImageIcon.getImage();
 	}
 
 	public void actionPerformed(ActionEvent e){
@@ -93,6 +92,20 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			this.imagePasseSansUpdate = 0;
 		}
 		
+		//Action de jeu
+		if(!animationEnCours) {
+			//Echange les tour des intelligences
+			if(joueur.ATerminerSonTour()) {
+				tourEnnemi = true;
+				//ennemi.debutTour();
+			}
+			/*
+			else if(ennemi.ATerminerSonTour()) {
+				tourEnnemi = false;
+				//joueur.debutTour();
+			}
+			*/
+		}
 		repaint(); //Affiche l'image
 	}
 
@@ -118,7 +131,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    int caseCibleIndice = -1;
 	    System.out.println(x+", "+y);
 
-	    if(!tourEnnemi) {
+	    if(!tourEnnemi && !animationEnCours) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
 	    	//Le joueur essaye de selectionner son personnage
 	    	caseCibleIndice = joueur.selectionPersonnage(x, y);
@@ -137,6 +150,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		    	//Aucun ennemi n'est sur la case
 		    		if(Case.estCaseValidePourDeplacement(x, y)) {
 		    			//Le joueur se deplace
+		    			animationEnCours = true;
 		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
 		    			//Deselectionne ensuite le joueur
 		    			indicePersonnageSelectionner = -1;

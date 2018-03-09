@@ -92,8 +92,6 @@ public class Carte extends ObjetAffichable {
 	 */
 		//En modifiant le personnage ci-dessous, nous modifiont aussi celui contenu dans l'intelligence
 		Personnage personnageADeplacer = intelligence.getPersonnages().get(indicePersonnageSelectionner);
-		int[][] carte = Carte.getCarte();
-		
 		personnageADeplacer.deplacer(x, y);
 	}
 }

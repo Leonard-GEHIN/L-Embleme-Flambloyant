@@ -12,7 +12,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	protected double defence, pointsDeVie, attaque;
 	protected String nom;
-	protected boolean aJouer = false, estEnMouvement = false, estAllie;
+	protected boolean tourTerminer = false, estEnMouvement = false, estAllie;
 	
 	//Utilise pour mouvement et animation
 	protected double distanceAPourcourir = 0;
@@ -130,13 +130,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	public void caseJouable() {
 		int[][] carte = Carte.getCarte();
-		int profondeur = 2;
+		int profondeur = 3;
 		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
 	}
 	
 	
 	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
 		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
+			//Les arbres consomme deux point de mouvements
 			if(carte[y][x] != 10 && profondeur >= 0) {
 			//Si la case n'a pas ete visite
 				profondeur--;
@@ -199,7 +200,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.vitesseY = distanceAPourcourirPixelY / tempsAnimation;
 
 		timer_pas.start();
-		this.aJouer = true;
+		this.tourTerminer = true;
 	}
 
 
@@ -244,6 +245,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.nouvelleCaseX = 0;
 			this.nouvelleCaseY = 0;
 			this.timer_pas.stop();
+			Board.animationEnCours = false; //Le jeu peut reprendre
 
 			Case.genererCarte(Board.joueur/*, ennemi*/, -1);
 			/*
@@ -252,6 +254,12 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.attaque(ennemi); //Qui declenche l'anim d'attaque
 			*/
 		}
+	}
+	
+
+	//Active le debut du tour du personnage
+	public void debutTour() {
+		this.tourTerminer = false;
 	}
 	
 	/**
@@ -318,20 +326,6 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 	
 	/**
-	 * @return the aJouer
-	 */
-	public boolean isaJouer() {
-		return aJouer;
-	}
-
-	/**
-	 * @param aJouer the aJouer to set
-	 */
-	public void setaJouer(boolean aJouer) {
-		this.aJouer = aJouer;
-	}
-
-	/**
 	 * @return the estEnMouvement
 	 */
 	public boolean isEstEnMouvement() {
@@ -387,4 +381,11 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.caseY = caseY;
 	}
 
+
+	/**
+	 * @return the tourTerminer
+	 */
+	public boolean isTourTerminer() {
+		return tourTerminer;
+	}
 }
