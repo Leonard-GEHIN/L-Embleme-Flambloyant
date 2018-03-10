@@ -78,6 +78,7 @@ public abstract class Intelligence extends ObjetAffichable{
 
 	public void retirerPersonnage(Personnage personnageARetirer) {
 		// On recherche le personnage, on l'enleve apres
+		System.out.println("Personnage retirer");
 		this.personnages.remove(personnageARetirer);
 	}
 	

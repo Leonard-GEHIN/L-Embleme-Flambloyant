@@ -25,7 +25,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	protected static Joueur joueur = new Joueur();
 	protected static Ennemi ennemi = new Ennemi();
 	private static boolean personnageSelectionner = false;
-	private boolean tourEnnemi = false;
+	private static boolean tourEnnemi = false;
 	private boolean enJeu = false;
 	private static boolean attenteSelectionCibleAttaque = false;
 	public static boolean animationEnCours = false;
@@ -33,11 +33,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int IMAGE_PAR_SECONDE_VOULU = 20; // Nombre d'image par seconde souhaite (20 = bonne qualite)
-	private final int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
-	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
+	private final static int IMAGE_PAR_SECONDE_VOULU = 20; // Nombre d'image par seconde souhaite (60 = bonne qualite)
+	private final static int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
+	private final static int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
-	private int nombreImageParSeconde = 0, imagePasseSansUpdate = 0;
+	private int nombreImageParSeconde = 0;
+	private static int imagePasseSansUpdate = 0;
 	
 	//Attribut de son
 	//public Sound snd_loop = new Sound("");
@@ -115,27 +116,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
 		if(enJeu) {
-			this.imagePasseSansUpdate++;
-			if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
-				ennemi.update();
-				joueur.update();
-				this.imagePasseSansUpdate = 0;
-			}
-			
+			miseAJourDesIndicesDImage();
 			//Action de jeu
-			if(!animationEnCours) {
-				//Echange les tour des intelligences
-				if(joueur.ATerminerSonTour() && !tourEnnemi) {
-					System.out.println("C'est maintenant le tour des ennemis");
-					tourEnnemi = true;
-					ennemi.debutTour();
-				}
-				else if(ennemi.ATerminerSonTour() && tourEnnemi) {
-					tourEnnemi = false;
-					joueur.debutTour();
-				}
-				
-			}
+			echangerTour();
 		}
 		repaint(); //Affiche l'image
 	}
@@ -156,71 +139,113 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//TODO ajout chargerClasse() Hache et Lance
 	}
 
+/*
+ * Gestion de la souris et de l'avancement de la partie
+ */
 	public void mouseClicked(MouseEvent e) { //Evenement quand il y a un click
 	    int x=(int)(e.getX()/(Application.SCALE * 16)); //16 est la taille en pixel dune case avec un SCALE de 1
 	    int y=(int)(e.getY()/(Application.SCALE * 16));	    
 
     	int caseCibleIndiceJoueur = joueur.selectionPersonnage(x, y);
     	int caseCibleIndiceEnnemi = ennemi.selectionPersonnage(x, y);
-    	
+    	System.out.println("ennemi: "+caseCibleIndiceEnnemi + " joueur:"+ caseCibleIndiceJoueur);
 	    if(!tourEnnemi && !animationEnCours && enJeu) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
-	    	//Le joueur essaye de selectionner son personnage
 	    	if(caseCibleIndiceJoueur > -1) {
-	    		indicePersonnageSelectionner = caseCibleIndiceJoueur;
-	    		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
-	    		personnageSelectionner = true;
-	    		attenteSelectionCibleAttaque = false;
+	    	//Le joueur selectionne un personnage
+	    		selectionnePersonnage(caseCibleIndiceJoueur);
 	    	}
 	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
-		    //Le joueur deplace son personnage, il ne vise pas un de ses personnage et il a un personnage selectionne
-	    		if(attenteSelectionCibleAttaque) {
-	    		//Le joueur peut attaquer un ennemi
-	    			if(caseCibleIndiceEnnemi > -1) {
-	    			//Le joueur attaque un ennemi
-	    				joueur.attaquePersonnage(indicePersonnageSelectionner, caseCibleIndiceEnnemi, ennemi);
-	    				//TODO animation d'attaque
-	    			}
-	    			else {
-	    			//Le joueur ne souhaite pas se deplacer
-	    				attenteSelectionCibleAttaque = false;
-	    			}
+	    	//Le joueur a deja selectionner un personnage et souhaite l'utiliser
+	    		if(caseCibleIndiceEnnemi > -1 && personnageSelectionnerPeutAttaquer(caseCibleIndiceEnnemi)) {
+	    		//Le joueur cible et peut attaquer un ennemi
+    				joueur.attaquePersonnage(indicePersonnageSelectionner, caseCibleIndiceEnnemi, ennemi);
+    				deselectionnePersonnage();
+    				attenteSelectionCibleAttaque = false;
 	    		}
-	    		else {
-	    		//Le joueur veut deplacer son personnage
-	    			if(caseCibleIndiceEnnemi == -1) {
-    		    	//Aucun ennemi n'est sur la case
-    		    		if(Case.estCaseValidePourDeplacement(x, y)) {
-    		    			//Le joueur se deplace
-    		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
-    		    			//Deselectionne ensuite le joueur
-    		    		}
-    		    		else{
-    		    		//Si aucune case valide n'est selectionner
-    		    			indicePersonnageSelectionner = -1;
-    		    			personnageSelectionner = false;
-    		    			Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
-    		    		}
-	    			}
+	    		else if(Case.estCaseValidePourDeplacement(x, y) && caseCibleIndiceEnnemi == -1) {
+	    		//Le joueur deplace son personnage <=> ne vise pas d'ennemi mais une case jouable
+	    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
+	    			joueur.getPersonnages().get(indicePersonnageSelectionner).terminerTour();
+	    			//Le personnage est deselectionner via la fonction d'animation
+	    		}
+	    		else if(caseCibleIndiceEnnemi == -1 && caseCibleIndiceJoueur == -1) {
+	    		//Le joueur Deselectionne son personnage en visant une case vide
+	    			deselectionnePersonnage();
 	    		}
 	    	}
 	    }
 	}
 	
-	public static void personnagePeutAttaquer() {
-		if(joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquer(ennemi)) {
-			System.out.println("Attente attaque du joueur activer");
+	
+	public static void personnagePeutAttaquerApresDeplacement() {
+	//Methode appele apres le deplacement (A la fin de l'animation
+		if(personnageSelectionnerPeutAttaquer()) {
 			attenteSelectionCibleAttaque = true;
-			//TODO calculer les ennemis qu'on peut attaquer et faire une liste
 		}
-		
-		if(!attenteSelectionCibleAttaque) {
-			indicePersonnageSelectionner = -1;
-			personnageSelectionner = false;
+		else {
+			deselectionnePersonnage();
 		}
 	}
-
 	
+	
+	public static boolean personnageSelectionnerPeutAttaquer() {
+		return joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquer(ennemi);
+	}
+	
+	public static boolean personnageSelectionnerPeutAttaquer(int indice){
+		boolean peutAttaquer = false;
+		 if(indice >= 0)
+			 peutAttaquer = joueur.getPersonnages().get(indicePersonnageSelectionner).
+									peutAttaquer(ennemi.getPersonnages().get(indice));
+		
+		return peutAttaquer;
+	}
+	
+
+	public static void deselectionnePersonnage() {
+		indicePersonnageSelectionner = -1;
+		personnageSelectionner = false;
+		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
+	}
+	
+	
+	public static void selectionnePersonnage(int indicePersoSelectionner) {
+		personnageSelectionner = true;
+		attenteSelectionCibleAttaque = false;
+		indicePersonnageSelectionner = indicePersoSelectionner;
+		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
+	}
+	
+	
+	private static void echangerTour(){
+		if(!animationEnCours && !attenteSelectionCibleAttaque) {
+		//Echange les tour des intelligences
+			if(joueur.ATerminerSonTour() && !tourEnnemi) {
+				System.out.println("C'est maintenant le tour des ennemis");
+				tourEnnemi = true;
+				ennemi.debutTour();
+			}
+			else if(ennemi.ATerminerSonTour() && tourEnnemi) {
+				tourEnnemi = false;
+				joueur.debutTour();
+			}
+		}
+	}
+	
+	
+	public static void miseAJourDesIndicesDImage() {
+		imagePasseSansUpdate++;
+		if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
+			ennemi.update();
+			joueur.update();
+			imagePasseSansUpdate = 0;
+		}
+	}
+	
+/*
+ * Methode implementer du listener de la souris
+ */
 	//Le listener de la souris etant un template, on doit override les methode abstract meme si elles sont vides.
 	@Override
 	public void mouseEntered(MouseEvent e) {}

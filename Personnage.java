@@ -114,8 +114,10 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		//Debut du combat
 		cible.setPointsDeVie(Methode.minorerParZero( cible.getPointsDeVie() - degatAttaquant ));
 		
-		if(cible.getPointsDeVie() == 0) {
+		System.out.println("Pdv: " + cible.getPointsDeVie());
+		if((int)(cible.getPointsDeVie()) == 0) {
 		//La cible est morte
+			System.out.println("On va entrer dans la fonction de mort");
 			cible.meurt();
 		}
 		else {
@@ -129,6 +131,17 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		//Calcul vitesse
 		this.initialiserAnimatiom(this.caseX, this.caseY,
 								  cible.getCaseX(), cible.getCaseY(), "Combat");
+		this.terminerTour();
+	}
+	
+	
+	public void meurt() {
+		this.estMort = true;
+
+		System.out.println("Personnage mort");
+		//On enleve le personnage de l'equipe de son intelligence
+		Intelligence maitre = this.estAllie ? Board.joueur : Board.ennemi;
+		maitre.retirerPersonnage(this);
 	}
 	
 	
@@ -159,19 +172,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 	
 	
-	public void meurt() {
-		this.estMort = true;
-		
-		//On enleve le personnage de l'equipe de son intelligence
-		Intelligence maitre = this.estAllie ? Board.joueur : Board.ennemi;
-		maitre.retirerPersonnage(this);
-	}
-	
-	
 /*
  * Methodes utile a d'autre clase et / ou d'autre methodes
  */
 	
+
+	public void terminerTour() {
+		this.tourTerminer = true;
+	}
 	
 	public boolean equals(Personnage personnageTest) {
 		boolean estIdentique = true;
@@ -250,15 +258,19 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public boolean peutAttaquer(Intelligence ciblePossible) {
 		boolean attaquePossible = false;
 		
-		for (Personnage cible : ciblePossible.getPersonnages()) {
-			if(this.distance(cible) <= 1) {
-				attaquePossible = true;
-			}
-		}
+		for (Personnage cible : ciblePossible.getPersonnages())
+			if(peutAttaquer(cible))
+				attaquePossible = true;		
 		
 		return attaquePossible;
 	}
 	
+	public boolean peutAttaquer(Personnage cible) {
+		boolean attaquePossible = false;
+		if(this.distance(cible) <= 1)
+			attaquePossible = true;
+		return attaquePossible;
+	}
 	
 	public double distance(Personnage perso) {
 		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 )
@@ -341,7 +353,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.nouvelleCaseY = nouvelleCaseY;
 
 		initialiserAnimatiom(this.caseX, this.caseY, this.nouvelleCaseX, this.nouvelleCaseY, "Deplacement");
-		this.tourTerminer = true;
+		this.terminerTour();
 	}
 	
 	
@@ -446,7 +458,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//On actualise la position du personnage a la fin du mouvement
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
-				Board.personnagePeutAttaquer();
+				Board.personnagePeutAttaquerApresDeplacement();
 			}
 			
 			this.tempsAnimation = 0;
@@ -537,4 +549,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public static String getClasse() {
 		return classe;
 	}
+
+
+
 }
