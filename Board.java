@@ -54,8 +54,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
+		Carte.enleverCaseApparition();
 		Carte.afficherCarteTerminal();
 		Case.genererCarte(joueur, -1);
+		
 	}
 
 	@Override

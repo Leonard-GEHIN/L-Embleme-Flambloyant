@@ -65,6 +65,28 @@ public class Carte extends ObjetAffichable {
 			carte[y][x] = 3;
 	}
 
+	//Enleve les case ou aucun personnage n'est apparu
+	public static void enleverCaseApparition() {
+		for (int j = 0; j < carte.length; j++) {
+			for (int i = 0; i < carte[0].length; i++) {
+				if(carte[j][i] == 1 || carte[j][i] == 2){
+					carte[j][i] = 3;
+				}
+			}
+		}
+	}
+	
+
+	public static void deplacerPersonnage(int x, int y, Intelligence intelligence, int indicePersonnageSelectionner) {
+	/*
+	 * Deplace le personnage a la case indiquer
+	 * Les test pour valider la case et la possibilite du personnage pour aller a la case on deja ete suffisemment evaluer
+	 */
+		//En modifiant le personnage ci-dessous, nous modifiont aussi celui contenu dans l'intelligence
+		Personnage personnageADeplacer = intelligence.getPersonnages().get(indicePersonnageSelectionner);
+		personnageADeplacer.deplacer(x, y);
+	}
+	
 	/**
 	 * @return the imageCarte
 	 */
@@ -84,16 +106,6 @@ public class Carte extends ObjetAffichable {
 		}
 		
 		return carteClone;
-	}
-
-	public static void deplacerPersonnage(int x, int y, Intelligence intelligence, int indicePersonnageSelectionner) {
-	/*
-	 * Deplace le personnage a la case indiquer
-	 * Les test pour valider la case et la possibilite du personnage pour aller a la case on deja ete suffisemment evaluer
-	 */
-		//En modifiant le personnage ci-dessous, nous modifiont aussi celui contenu dans l'intelligence
-		Personnage personnageADeplacer = intelligence.getPersonnages().get(indicePersonnageSelectionner);
-		personnageADeplacer.deplacer(x, y);
 	}
 }
 

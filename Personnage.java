@@ -152,14 +152,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 					profondeurConsomee = 100;
 					break;
 			}
-			for (int i = 0; i < carte.length; i++) {
-				for (int j = 0; j < carte[i].length; j++) {
-					System.out.print(carte[i][j] + " ");
-				}
-				System.out.println();
-			}
-			System.out.println();
-			
+
 			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
 			profondeur-=profondeurConsomee;
 			//Les arbres consomme deux point de mouvements
