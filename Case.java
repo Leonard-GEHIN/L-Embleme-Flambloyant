@@ -64,7 +64,7 @@ public class Case extends ObjetAffichable {
 	}
 
 	//Utiliser a chaque mouvement et chaque clic
-	public static void genererCarte(Intelligence joueur/*, Intelligence ennemi*/, int indicePersonnageSelectionner) {
+	public static void genererCarte(Intelligence joueur, Intelligence ennemi, int indicePersonnageSelectionner) {
 		reinitialiserCases();
 		
 		//si indicePersonnageSelectionner vaut -1, aucun personnage n'est selectionner
@@ -80,13 +80,10 @@ public class Case extends ObjetAffichable {
 		for (Personnage persoJoueur : joueur.getPersonnages()) {
 			carteCase[persoJoueur.getCaseY()][persoJoueur.getCaseX()] = 2;
 		}
-		/*
-		if(ennemi.getPersonnages()) {
-			for (Personnage persoEnnemi : ennemi.getPersonnages()) {
-				carteCase[persoEnnemi.getCaseY()][persoEnnemi.getCaseX()] = 3;
-			}
+		
+		for (Personnage persoEnnemi : ennemi.getPersonnages()) {
+			carteCase[persoEnnemi.getCaseY()][persoEnnemi.getCaseX()] = 3;
 		}
-		*/
 	}
 
 	public static void afficherCarteTerminal() {

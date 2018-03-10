@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
@@ -15,18 +16,21 @@ import javax.swing.Timer;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener, MouseListener {
+	//Attribut relative a l'affichage
+	public static int tailleCaractereY = (int)(6*Application.SCALE);
+	public static int tailleCaractereX = (int)(tailleCaractereY*0.6);
 	
 	//Attribut relative au element de jeu
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
-	//private Ennemi ennemi = new Ennemi();
+	protected static Ennemi ennemi = new Ennemi();
 	private boolean personnageSelectionner = false, tourEnnemi = false, enJeu = false;
 	public static boolean animationEnCours = false;
 	private int indicePersonnageSelectionner;
 	
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int IMAGE_PAR_SECONDE_VOULU = 5; // Nombre d'image par seconde souhaite (20 = bonne qualite)
+	private final int IMAGE_PAR_SECONDE_VOULU = 10; // Nombre d'image par seconde souhaite (20 = bonne qualite)
 	private final int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
 	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
@@ -54,9 +58,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
 		joueur.ajouterPersonnage(new Epee(true));
+		ennemi.ajouterPersonnage(new Epee(false));
+		ennemi.ajouterPersonnage(new Epee(false));
+		ennemi.ajouterPersonnage(new Epee(false));
 		Carte.enleverCaseApparition();
 		Carte.afficherCarteTerminal();
-		Case.genererCarte(joueur, -1);
+		Case.genererCarte(joueur, ennemi, -1);
 		
 	}
 
@@ -82,17 +89,28 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		carte.dessiner(this, g2d);
 		(new Case()).dessiner(this, g2d);
 		joueur.dessiner(this, g2d);
-		//ennemi.dessiner(this, g2d);
-
-		//g2d.drawString("Score: ", 4, 12);
+		ennemi.dessiner(this, g2d);
+		dessinerInformation(this, g2d);
 		this.enJeu = true;
 	}
+
+	private static void dessinerInformation(Board board, Graphics2D g2d) {
+		int offsetYEnPixel = Carte.getHauteurEnPixel() + tailleCaractereY; //La fin de la carte
+		int offsetXEnCase = 0;
+		g2d.setFont(new Font("Monospaced", Font.PLAIN, tailleCaractereY));
+		
+		offsetXEnCase = joueur.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
+		offsetXEnCase += 5;
+		offsetXEnCase = ennemi.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
+	}
+
 
 	public void actionPerformed(ActionEvent e){
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
 		if(enJeu) {
 			this.imagePasseSansUpdate++;
 			if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
+				ennemi.update();
 				joueur.update();
 				this.imagePasseSansUpdate = 0;
 			}
@@ -103,14 +121,13 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				if(joueur.ATerminerSonTour() && !tourEnnemi) {
 					System.out.println("C'est maintenant le tour des ennemis");
 					tourEnnemi = true;
-					//ennemi.debutTour();
+					ennemi.debutTour();
 				}
-				/*
-				else if(ennemi.ATerminerSonTour() %% tourEnnemi) {
+				else if(ennemi.ATerminerSonTour() && tourEnnemi) {
 					tourEnnemi = false;
-					//joueur.debutTour();
+					joueur.debutTour();
 				}
-				*/
+				
 			}
 		}
 		repaint(); //Affiche l'image
@@ -144,12 +161,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    	if(caseCibleIndice > -1) {
 	    	//Si le joueur clique sur un de ses personnage
 	    		indicePersonnageSelectionner = caseCibleIndice;
-	    		Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);
+	    		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
 	    		personnageSelectionner = true;
 	    	}
 	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
 		    //Le joueur deplace son personnage, il ne vise pas un de ses personnage et il a un personnage selectionne
-		    	//caseCibleIndice = ennemi.selectionPersonnage(x, y);
+		    	caseCibleIndice = ennemi.selectionPersonnage(x, y);
 		    	caseCibleIndice = -1; //Simulation que l'ennemi n'est pas la
 		    	if(caseCibleIndice == -1) {
 		    	//Aucun ennemi n'est sur la case
@@ -165,7 +182,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		    		//Si aucune case valide n'est selectionner
 		    			indicePersonnageSelectionner = -1;
 		    			personnageSelectionner = false;
-		    			Case.genererCarte(joueur/*, ennemi*/, indicePersonnageSelectionner);		    		}
+		    			Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);		    		}
 		    	}
 		    	else {
 				    //Le joueur vise un ennemi

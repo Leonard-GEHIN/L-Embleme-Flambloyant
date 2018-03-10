@@ -20,6 +20,15 @@ public abstract class Intelligence extends ObjetAffichable{
 		}
 	}
 	
+	public int dessinerInformation(Board board, Graphics2D g2d, int offsetXEnCase, int offsetYEnPixel) {
+	//Renvoie la taille total de ces information en nombre de caractere
+		for (Personnage personnage : this.personnages) {
+			offsetXEnCase += personnage.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
+			offsetXEnCase += 1;
+		}
+		return offsetXEnCase;
+	}
+	
 	public void ajouterPersonnage(Personnage personnage) {
 		if(this.personnages.size() <= 3) {
 			this.personnages.add(personnage);
@@ -64,6 +73,12 @@ public abstract class Intelligence extends ObjetAffichable{
 		for (Personnage personnage : personnages) {
 			personnage.debutTour();
 		}
+	}
+	
+
+	public void retirerPersonnage(Personnage personnageARetirer) {
+		// On recherche le personnage, on l'enleve apres
+		this.personnages.remove(personnageARetirer);
 	}
 
 	/**

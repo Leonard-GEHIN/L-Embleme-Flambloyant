@@ -9,10 +9,12 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	protected int DELAY = 40;
 	protected final int tempsParcourUneCase = 300; //Duree en miliseconde pour la traverse d'une case
 	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
-	
-	protected double defence, pointsDeVie, attaque;
+
+	protected int ID;
+	protected static int nombrePersonnage = 1;
+	protected double defense, pointsDeVie, attaque;
 	protected String nom;
-	protected boolean tourTerminer = false, estEnMouvement = false, estAllie;
+	protected boolean tourTerminer = false, estEnMouvement = false, estAllie, estMort = false;
 	
 	//Utilise pour mouvement et animation
 	protected double distanceAPourcourir = 0;
@@ -59,14 +61,66 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			i++;
 		}
 		System.out.println("Position personnage : " + caseX + " " + caseY);
+		
+		this.ID = nombrePersonnage;
+		nombrePersonnage++;
 	}
 
 	
-	public abstract void attaque();
+	public abstract double getAttaque(Personnage cible);
+	public abstract double getDefense(Personnage cible);
 	
 
+	public void attaque(Personnage cible) {
+	//attaquant attaque et la cible riposte, la riposte est un peu moins efficace
+		//Calcul des degats
+		double degatAttaquant = Methode.minorerParZero(this.getAttaque(null) - cible.getDefense(null));
+		double degatCible = Methode.minorerParZero(cible.getAttaque(null) - this.getDefense(null));
+		
+		//Debut du combat
+		cible.setPointsDeVie(Methode.minorerParZero( cible.getPointsDeVie() - degatAttaquant ));
+		
+		if(cible.getPointsDeVie() == 0) {
+		//La cible est morte
+			cible.meurt();
+		}
+		else {
+		//La cible va contre attaquer
+			degatCible *= 0.8;
+			this.setPointsDeVie(Methode.minorerParZero( this.getPointsDeVie() - degatCible ));
+			this.meurt();
+		}
+	}
+	
+	
 	public void meurt() {
-		//TODO methode meurt()
+		this.estMort = true;
+		
+		//On enleve le personnage de l'equipe de son intelligence
+		Intelligence maitre = this.estAllie ? Board.joueur : Board.ennemi;
+		maitre.retirerPersonnage(this);
+	}
+	
+	public boolean equals(Personnage personnageTest) {
+		boolean estIdentique = true;
+		/*
+		 * protected double defence, pointsDeVie, attaque;
+		 * protected String nom;
+		 */
+		if(this.getDefense(null) != personnageTest.getDefense(null))
+			estIdentique = false;
+
+		if(this.getAttaque(null) != personnageTest.getAttaque(null))
+			estIdentique = false;
+
+		if(this.getPointsDeVie() != personnageTest.getPointsDeVie())
+			estIdentique = false;
+
+		if( this.getNom().equals( personnageTest.getNom() ) )
+			estIdentique = false;
+		
+		
+		return estIdentique;
 	}
 
 	
@@ -78,20 +132,45 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
-		ImageIcon image;
-		//Calcul de l'image
-		if(estEnMouvement)
-			image = imageMouvement[this.directionMouvement][this.compteurSkin];
-		else
-			image = imageDebout[this.compteurSkin];
+		if(!this.estMort) {
+			double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
+			ImageIcon image;
+			//Calcul de l'image
+			if(estEnMouvement)
+				image = imageMouvement[this.directionMouvement][this.compteurSkin];
+			else
+				image = imageDebout[this.compteurSkin];
+	
+			//Affiche les images
+			//les variables offsetMouvement sert a animer les personnages
+			g2d.drawImage(image.getImage(),
+					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY),
+					(int)(sc*31), (int)(sc*31),
+					board);
+		}
+	}
 
-		//Affiche les images
-		//les variables offsetMouvement sert a animer les personnages
-		g2d.drawImage(image.getImage(),
-				(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY),
-				(int)(sc*31), (int)(sc*31),
-				board);
+
+	public int dessinerInformation(Board board, Graphics2D g2d, int offsetXEnCase, int offsetYEnPixel) {
+		String[] informationListe = new String[5]; //Nom, PV, attaque, defense
+		//Construction des informations a afficher
+		informationListe[0] = "|Perso " + this.ID;
+		informationListe[1] = "|" + this.nom;
+		informationListe[2] = "|PdV:" + (int)(this.getPointsDeVie());
+		informationListe[3] = "|Atk:" + (int)(this.getAttaque(null));
+		informationListe[4] = "|Def:" + (int)(this.getDefense(null));
+		
+		//Recherche de la taille max et on affiche les informations
+		int longueurMax = 0;
+		for (int i = 0; i < informationListe.length; i++) {
+			if(informationListe[i].length() > longueurMax) {
+				longueurMax = informationListe[i].length();
+			}
+			g2d.drawString(informationListe[i], (int)(offsetXEnCase*Board.tailleCaractereX),
+												offsetYEnPixel+Board.tailleCaractereY*i);
+		}
+		
+		return longueurMax;
 	}
 	
 	
@@ -244,9 +323,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//On actualise la position du personnage a la fin du mouvement
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
-				
 			}
-			
 			
 			this.distanceAPourcourir = 0;
 			this.vitesseX = 0;
@@ -262,7 +339,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.timer_pas.stop();
 			Board.animationEnCours = false; //Le jeu peut reprendre
 
-			Case.genererCarte(Board.joueur/*, ennemi*/, -1);
+			Case.genererCarte(Board.joueur, Board.ennemi, -1);
 			/*
 			//Pour porter une attaque
 			//On peut  faire une variale vaAttaquer et une variable cible
@@ -276,97 +353,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public void debutTour() {
 		this.tourTerminer = false;
 	}
-	
-	/**
-	 * @return the defence
-	 */
-	public double getDefence() {
-		return defence;
-	}
 
-	/**
-	 * @param defence the defence to set
-	 */
-	public void setDefence(double defence) {
-		this.defence = defence;
-	}
-
-	/**
-	 * @return the pointsDeVie
-	 */
-	public double getPointsDeVie() {
-		return pointsDeVie;
-	}
-
-	/**
-	 * @param pointsDeVie the pointsDeVie to set
-	 */
-	public void setPointsDeVie(double pointsDeVie) {
-		this.pointsDeVie = pointsDeVie;
-	}
-
-	/**
-	 * @return the attaque
-	 */
-	public double getAttaque() {
-		return attaque;
-	}
-
-	/**
-	 * @param attaque the attaque to set
-	 */
-	public void setAttaque(double attaque) {
-		this.attaque = attaque;
-	}
-
-	/**
-	 * @return the nom
-	 */
-	public String getNom() {
-		return nom;
-	}
-
-	/**
-	 * @param nom the nom to set
-	 */
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-
-	/**
-	 * @return the classe
-	 */
-	public static String getClasse() {
-		return classe;
-	}
-	
-	/**
-	 * @return the estEnMouvement
-	 */
-	public boolean isEstEnMouvement() {
-		return estEnMouvement;
-	}
-
-	/**
-	 * @param estEnMouvement the estEnMouvement to set
-	 */
-	public void setEstEnMouvement(boolean estEnMouvement) {
-		this.estEnMouvement = estEnMouvement;
-	}
-
-	/**
-	 * @return the directionMouvement
-	 */
-	public int getDirectionMouvement() {
-		return directionMouvement;
-	}
-
-	/**
-	 * @param directionMouvement the directionMouvement to set
-	 */
-	public void setDirectionMouvement(int directionMouvement) {
-		this.directionMouvement = directionMouvement;
-	}
 
 	/**
 	 * @return the caseX
@@ -375,12 +362,6 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		return caseX;
 	}
 
-	/**
-	 * @param caseX the caseX to set
-	 */
-	public void setCaseX(int caseX) {
-		this.caseX = caseX;
-	}
 
 	/**
 	 * @return the caseY
@@ -389,18 +370,43 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		return caseY;
 	}
 
-	/**
-	 * @param caseY the caseY to set
-	 */
-	public void setCaseY(int caseY) {
-		this.caseY = caseY;
-	}
-
 
 	/**
 	 * @return the tourTerminer
 	 */
 	public boolean isTourTerminer() {
 		return tourTerminer;
+	}
+
+
+	/**
+	 * @return the estEnMouvement
+	 */
+	public boolean isEstEnMouvement() {
+		return estEnMouvement;
+	}
+
+
+	/**
+	 * @return the pointsDeVie
+	 */
+	public double getPointsDeVie() {
+		return pointsDeVie;
+	}
+
+
+	/**
+	 * @param pointsDeVie the pointsDeVie to set
+	 */
+	public void setPointsDeVie(double pointsDeVie) {
+		this.pointsDeVie = pointsDeVie;
+	}
+
+
+	/**
+	 * @return the nom
+	 */
+	public String getNom() {
+		return nom;
 	}
 }

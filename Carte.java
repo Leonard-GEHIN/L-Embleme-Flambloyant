@@ -23,8 +23,8 @@ public class Carte extends ObjetAffichable {
 
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		g2d.drawImage(imageCarte.getImage(), 0, 0, (int) (Application.SCALE * 240 - 1),
-				(int) (Application.SCALE * 160 - 1), board);
+		g2d.drawImage(imageCarte.getImage(), 0, 0,
+				(int) (Application.SCALE * 240 - 1), getHauteurEnPixel(), board);
 	}
 
 	public static void chargerCarte(int nouveauNumeroCarte) {
@@ -43,7 +43,7 @@ public class Carte extends ObjetAffichable {
 									{ 3, 3, 4, 3, 3, 4, 3, 4, 3, 3, 3, 0, 0, 3, 3 },
 									{ 3, 3, 3, 4, 3, 3, 3, 3, 4, 3, 3, 2, 3, 3, 3 }, 
 									{ 4, 3, 4, 4, 3, 3, 4, 3, 4, 4, 3, 3, 0, 0, 3 },
-									{ 4, 1, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 3, 0, 3 }, 
+									{ 4, 1, 3, 4, 2, 3, 4, 3, 3, 4, 3, 3, 3, 0, 3 }, 
 									{ 3, 3, 1, 4, 3, 4, 4, 4, 3, 3, 3, 3, 3, 0, 0 },
 									{ 3, 4, 3, 3, 1, 3, 4, 3, 4, 3, 0, 0, 0, 0, 0 } };
 			carte = carteTemp;
@@ -106,6 +106,11 @@ public class Carte extends ObjetAffichable {
 		}
 		
 		return carteClone;
+	}
+
+	public static int getHauteurEnPixel() {
+		// TODO Auto-generated method stub
+		return (int) (Application.SCALE * 160 - 1);
 	}
 }
 

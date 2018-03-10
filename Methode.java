@@ -4,4 +4,8 @@ public class Methode {
 		return retour;
 		//TODO execption si min > max
 	}
+	
+	public static double minorerParZero(double x) {
+		return x>0 ? x:0;
+	}
 }

@@ -16,8 +16,8 @@ public class Epee extends Personnage{
 		this.attaque = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioAttaque);
 		pointsRestant -= this.attaque;
 		nombreStatRestanteACalcule--;
-		this.defence = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioDefence);
-		pointsRestant -= this.defence;
+		this.defense = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioDefence);
+		pointsRestant -= this.defense;
 		nombreStatRestanteACalcule--;
 		this.pointsDeVie = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioPointsDeVie);
 		pointsRestant -= this.pointsDeVie;
@@ -54,17 +54,21 @@ public class Epee extends Personnage{
 		System.out.println("Classe Epee Charger.");
 	}
 	
-	
-	@Override
-	public void attaque() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void meurt() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public double getAttaque(Personnage cible) {
+		return this.attaque;
+	}
+
+	@Override
+	public double getDefense(Personnage cible) {
+		return this.defense;
 	}
 }
 
