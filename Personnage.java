@@ -1,3 +1,5 @@
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -158,7 +160,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		if(!this.estMort) {
+		if(!this.estMort) {			
 			double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
 			ImageIcon image;
 			//Calcul de l'image
@@ -167,12 +169,21 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			else
 				image = imageDebout[this.compteurSkin];
 	
-			//Affiche les images
+			//Changement de la police
+			int taillePoliceY = (int)(Application.SCALE*4);
+			Font font = new Font("Monospaced", Font.PLAIN, taillePoliceY);
+			g2d.setColor(Color.WHITE);
+			g2d.setFont(font);
+			
+			//Affiche les images et le numero du personnage
 			//les variables offsetMouvement sert a animer les personnages
 			g2d.drawImage(image.getImage(),
 					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY)+1,
 					(int)(sc*31), (int)(sc*31),
 					board);
+			g2d.drawString(""+this.ID,
+					(int)( sc*( 16*( caseX+1 ) )-taillePoliceY ),
+					(int)( sc*( 16*( caseY ) ) + taillePoliceY ) );
 		}
 	}
 

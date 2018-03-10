@@ -101,6 +101,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		int offsetYEnPixel = Carte.getHauteurEnPixel() + tailleCaractereY; //La fin de la carte
 		int offsetXEnCase = 0;
 		g2d.setFont(new Font("Monospaced", Font.PLAIN, tailleCaractereY));
+		g2d.setColor(Color.BLACK);
 		
 		offsetXEnCase = joueur.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
 		offsetXEnCase += 5;
@@ -217,6 +218,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		}
 	}
 
+	
+	//Le listener de la souris etant un template, on doit override les methode abstract meme si elles sont vides.
 	@Override
 	public void mouseEntered(MouseEvent e) {}
 	@Override
