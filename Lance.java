@@ -1,4 +1,4 @@
-import java.awt.Graphics2D;
+/* import java.awt.Graphics2D;
 
 public class Lance extends Personnage{
 
@@ -25,3 +25,4 @@ public class Lance extends Personnage{
 		
 	}
 }
+*/

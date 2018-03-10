@@ -1,4 +1,4 @@
-import java.awt.Graphics2D;
+/*import java.awt.Graphics2D;
 
 public class Hache extends Personnage{
 
@@ -26,3 +26,4 @@ public class Hache extends Personnage{
 	}
 
 }
+*/
