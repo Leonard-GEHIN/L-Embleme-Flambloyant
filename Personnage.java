@@ -10,21 +10,21 @@ import javax.swing.Timer;
 public abstract class Personnage extends ObjetAffichable implements ActionListener{
 	protected int DELAY = 40;
 	protected final int tempsParcourUneCase = 300; //Duree en miliseconde pour la traverse d'une case
-	protected Timer timer_pas = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
+	protected Timer timer = new Timer(DELAY,this); // timer servant a mettre a jour les deplacement des personnages
 
 	protected int ID;
 	protected static int nombrePersonnage = 1;
 	protected double defense, pointsDeVie, attaque;
 	protected String nom;
-	protected boolean tourTerminer = false, estEnMouvement = false, estAllie, estMort = false;
+	protected boolean tourTerminer = false, estAllie, estMort = false;
 	
 	//Utilise pour mouvement et animation
-	protected double distanceAPourcourir = 0;
+	protected double distanceAPourcourir = 0, multiplicateurVitesse = 1, tempsAnimation = 0;
 	protected int directionMouvement = 0, compteurSkin = Methode.nombreAlea(0, 3);
-	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0;
-	protected double vitesseX, vitesseY; // en px/ms
+	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0, etapeAnimationCombat = 0;
 	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
-	
+	protected double vitesseX, vitesseY; // en px/ms
+	protected boolean animationCombat = false, estEnMouvement = false;
 
 	//Variables de classe chargees dans la methode static chargerClasse()
 	//Variables servant a calculer les statistiques des personnages
@@ -65,11 +65,44 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.ID = nombrePersonnage;
 		nombrePersonnage++;
 	}
+	
 
+	
+/*
+ * Methodes abstraite
+ */
 	
 	public abstract double getAttaque(Personnage cible);
 	public abstract double getDefense(Personnage cible);
 	
+	
+/*
+ * Methode de generation
+ */
+
+	//Donne un nom au personnage en fonction de sa classe
+	public String genererNom() {
+		return  tabGenerationNom[Methode.nombreAlea(0, 3)];
+	}
+	
+	
+	public int generationStat(int statTotal, int statRestant, int nombreStatRestanteACalcule, double ratio) {
+		int stat;
+		
+		if( nombreStatRestanteACalcule > 1) {
+			int statMoyenne = (int) (statTotal * ratio);
+			stat = Methode.nombreAlea(statMoyenne*0.85, statMoyenne*1.15);		
+		}
+		else { //Quand il ne reste qu'une stat a calcule, on met tous les points restant dedans
+			stat = statRestant;
+		}
+		
+		return stat;
+	}
+	
+/*
+ * Methode utile au combat
+ */
 
 	public void attaque(Personnage cible) {
 	//attaquant attaque et la cible riposte, la riposte est un peu moins efficace
@@ -91,7 +124,13 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.setPointsDeVie(Methode.minorerParZero( this.getPointsDeVie() - degatCible ));
 			this.meurt();
 		}
+		
+		//Animation
+		//Calcul vitesse
+		this.initialiserAnimatiom(this.caseX, this.caseY,
+								  cible.getCaseX(), cible.getCaseY(), "Combat");
 	}
+	
 	
 	public double calcBonusArme(Personnage cible) {
 	//Calcul l'efficacite de l'attaque
@@ -129,6 +168,11 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 	
 	
+/*
+ * Methodes utile a d'autre clase et / ou d'autre methodes
+ */
+	
+	
 	public boolean equals(Personnage personnageTest) {
 		boolean estIdentique = true;
 		/*
@@ -147,16 +191,89 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		if( this.getNom().equals( personnageTest.getNom() ) )
 			estIdentique = false;
 		
-		
 		return estIdentique;
+	}
+	
+	
+	public boolean estPresent(int x, int y) {
+		boolean retour = false;
+		if(this.caseX == x && this.caseY == y) {
+			retour = true;
+		}
+		return retour;
+	}
+	
+	
+	public void caseJouable() {
+		int[][] carte = Carte.getCarte();
+		int profondeur = 4;
+		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
+	}
+	
+	
+	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
+		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
+			int profondeurConsomee = 0;
+			switch(carte[y][x]){
+				case 3: //case normal
+					profondeurConsomee = 1;
+					break;
+				case 4: //Case d'arbre
+					profondeurConsomee = 2;
+					break;
+				case 10: //Case valide
+					profondeurConsomee = 100;
+					break;
+				case 0: //case vide
+					profondeurConsomee = 100;
+					break;
+			}
+
+			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
+			profondeur-=profondeurConsomee;
+			//Les arbres consomme deux point de mouvements
+			if(profondeur > 0) {
+			//Si la case n'a pas ete visite
+				carte[y][x] = 10; //On valide la case
+				
+				int [] temptab = {x, y};
+				Case.ajouterValeur(temptab);
+				this.caseJouableRecursif(x - 1, y, profondeur, carte);
+				this.caseJouableRecursif(x + 1, y, profondeur, carte);
+				this.caseJouableRecursif(x, y + 1, profondeur, carte);
+				this.caseJouableRecursif(x, y - 1, profondeur, carte);
+			}
+		}
+	}
+	
+	
+	public boolean peutAttaquer(Intelligence ciblePossible) {
+		boolean attaquePossible = false;
+		
+		for (Personnage cible : ciblePossible.getPersonnages()) {
+			if(this.distance(cible) <= 1) {
+				attaquePossible = true;
+			}
+		}
+		
+		return attaquePossible;
+	}
+	
+	
+	public double distance(Personnage perso) {
+		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 )
+						  + Math.pow( this.caseY-perso.getCaseY(), 2 ) );
 	}
 
 	
-	//Donne un nom au personnage en fonction de sa classe
-	public String genererNom() {
-		return  tabGenerationNom[Methode.nombreAlea(0, 3)];
+	//Active le debut du tour du personnage
+	public void debutTour() {
+		this.tourTerminer = false;
 	}
 	
+/*
+ * Methode d'affichage et d'animation
+ */
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
@@ -218,83 +335,31 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			compteurSkin = ( compteurSkin + 1 ) % imageDebout.length;
 	}
 
-	
-	public int generationStat(int statTotal, int statRestant, int nombreStatRestanteACalcule, double ratio) {
-		int stat;
-		
-		if( nombreStatRestanteACalcule > 1) {
-			int statMoyenne = (int) (statTotal * ratio);
-			stat = Methode.nombreAlea(statMoyenne*0.85, statMoyenne*1.15);		
-		}
-		else { //Quand il ne reste qu'une stat a calcule, on met tous les points restant dedans
-			stat = statRestant;
-		}
-		
-		return stat;
-	}
-	
-
-
-	public boolean estPresent(int x, int y) {
-		boolean retour = false;
-		if(this.caseX == x && this.caseY == y) {
-			retour = true;
-		}
-		return retour;
-	}
-	
-	
-	public void caseJouable() {
-		int[][] carte = Carte.getCarte();
-		int profondeur = 4;
-		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
-	}
-	
-	
-	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
-		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
-			int profondeurConsomee = 0;
-			switch(carte[y][x]){
-				case 3: //case normal
-					profondeurConsomee = 1;
-					break;
-				case 4: //Case d'arbre
-					profondeurConsomee = 2;
-					break;
-				case 10: //Case valide
-					profondeurConsomee = 100;
-					break;
-				case 0: //case vide
-					profondeurConsomee = 100;
-					break;
-			}
-
-			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
-			profondeur-=profondeurConsomee;
-			//Les arbres consomme deux point de mouvements
-			if(profondeur > 0) {
-			//Si la case n'a pas ete visite
-				carte[y][x] = 10; //On valide la case
-				
-				int [] temptab = {x, y};
-				Case.ajouterValeur(temptab);
-				this.caseJouableRecursif(x - 1, y, profondeur, carte);
-				this.caseJouableRecursif(x + 1, y, profondeur, carte);
-				this.caseJouableRecursif(x, y + 1, profondeur, carte);
-				this.caseJouableRecursif(x, y - 1, profondeur, carte);
-			}
-		}
-	}
-
 
 	public void deplacer(int nouvelleCaseX, int nouvelleCaseY) {
-		this.estEnMouvement = true;
 		this.nouvelleCaseX = nouvelleCaseX;
 		this.nouvelleCaseY = nouvelleCaseY;
-		//On utilise des nouveau nom de variable pour plus de clarete dans la suite de la methode
-		int vecteurDeplacementX =  this.nouvelleCaseX - this.caseX;
-		int vecteurDeplacementY =  this.nouvelleCaseY - this.caseY;
+
+		initialiserAnimatiom(this.caseX, this.caseY, this.nouvelleCaseX, this.nouvelleCaseY, "Deplacement");
+		this.tourTerminer = true;
+	}
+	
+	
+	public void initialiserAnimatiom(int xIni, int yIni, int xDestination, int yDestination, String typeAnimation) {
+		int vecteurDeplacementX = xDestination - xIni;
+		int vecteurDeplacementY = yDestination - yIni;
+		double multiplicateurDistance = 1;
+		if(typeAnimation.equals("Combat")) {
+			this.multiplicateurVitesse = 3;
+			multiplicateurDistance = 0.6;
+			this.animationCombat = true;
+		}
+		else if(typeAnimation.equals("Deplacement")) {
+			this.multiplicateurVitesse = 1;
+			multiplicateurDistance = 1;
+		}
 		
+		//Calcul de la direction du mouvement
 		double rapportVecteur = 2;
 		try { //Gere le cas ou on ne se deplace pas en Y
 			rapportVecteur = vecteurDeplacementX / vecteurDeplacementY;
@@ -322,29 +387,50 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			}
 		}
 		
-		//Calcul vitesse
-		this.distanceAPourcourir = Math.sqrt( Math.pow(vecteurDeplacementX,2) + Math.pow(vecteurDeplacementY,2) );
-		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase; // en miliseconde
-		double distanceAPourcourirPixelX = vecteurDeplacementX*16*Application.SCALE;
-		double distanceAPourcourirPixelY = vecteurDeplacementY*16*Application.SCALE;
+		//Calcul de la vitesse
+		this.distanceAPourcourir = Math.sqrt( Math.pow(vecteurDeplacementX,2)
+			  + Math.pow(vecteurDeplacementY,2) );
+	
+		this.tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase
+												/ this.multiplicateurVitesse; // en miliseconde
+		double distanceAPourcourirPixelX = vecteurDeplacementX * 16*Application.SCALE * multiplicateurDistance;
+		double distanceAPourcourirPixelY = vecteurDeplacementY * 16*Application.SCALE * multiplicateurDistance;
 		this.vitesseX = distanceAPourcourirPixelX / tempsAnimation;
 		this.vitesseY = distanceAPourcourirPixelY / tempsAnimation;
-
-		timer_pas.start();
-		this.tourTerminer = true;
+		
+		Board.animationEnCours = true;
+		this.estEnMouvement = true;
+		timer.start();
 	}
 
 
 	@Override
 	public void actionPerformed(ActionEvent e) { //actualise l'animation du joueur
 		boolean finAnimation = false;
-		double tempsAnimation = this.distanceAPourcourir*tempsParcourUneCase;// en miliseconde
 		if(this.estEnMouvement) {
 			this.offsetMouvementX += this.vitesseX*this.DELAY;
 			this.offsetMouvementY += this.vitesseY*this.DELAY;
-
-			if((int)(tempsAnimation / this.DELAY) < this.tickAnimationUtilise) {
-				finAnimation = true;
+			
+			if((int)(this.tempsAnimation / this.DELAY) < this.tickAnimationUtilise) {
+			//Active la fin de l'animation
+				if(this.animationCombat) {
+				//On verifie l'etape de l'animation
+					if(this.etapeAnimationCombat == 1) {
+					//La 2nd etape est termine, l'animation prend fin
+						finAnimation = true;
+					}
+					else {
+					//On passe a la 2nd etape de l'animation, on reinitialise quelques variables
+						this.vitesseX *= -1;
+						this.vitesseY *= -1;
+						this.etapeAnimationCombat = 1;
+						this.tickAnimationUtilise = 0;
+					}
+				}
+				else {
+				//C'est une animation normale, elle prend fin
+					finAnimation = true;
+				}
 			}
 			
 			if(this.tickAnimationUtilise%(int)(160 / DELAY) == 0) {
@@ -356,13 +442,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		
 		if(finAnimation) {
 		//Variable a reinitialiser a la fin d'une animation
-			if(this.estEnMouvement) {
+			if(this.estEnMouvement && !this.animationCombat) {
 			//On actualise la position du personnage a la fin du mouvement
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
 				Board.personnagePeutAttaquer();
 			}
 			
+			this.tempsAnimation = 0;
 			this.distanceAPourcourir = 0;
 			this.vitesseX = 0;
 			this.vitesseY = 0;
@@ -374,7 +461,8 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.tickAnimationUtilise = 0;
 			this.nouvelleCaseX = 0;
 			this.nouvelleCaseY = 0;
-			this.timer_pas.stop();
+			this.timer.stop();
+			this.animationCombat = false;
 			Board.animationEnCours = false; //Le jeu peut reprendre
 
 			Case.genererCarte(Board.joueur, Board.ennemi, -1);
@@ -384,28 +472,6 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.attaque(ennemi); //Qui declenche l'anim d'attaque
 			*/
 		}
-	}
-
-
-	public boolean peutAttaquer(Intelligence ciblePossible) {
-		boolean attaquePossible = false;
-		
-		for (Personnage cible : ciblePossible.getPersonnages()) {
-			if(this.distance(cible) <= 1) {
-				attaquePossible = true;
-			}
-		}
-		
-		return attaquePossible;
-	}
-	
-	public double distance(Personnage perso) {
-		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 ) + Math.pow( this.caseY-perso.getCaseY(), 2 ) );
-	}
-
-	//Active le debut du tour du personnage
-	public void debutTour() {
-		this.tourTerminer = false;
 	}
 
 

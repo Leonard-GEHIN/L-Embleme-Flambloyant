@@ -42,6 +42,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	//Attribut de son
 	//public Sound snd_loop = new Sound("");
 	
+	
 	public Board() {
 		addKeyListener(new TAdapter()); //Active l'écoute des touches du clavier
 		
@@ -70,6 +71,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		
 	}
 
+	
 	@Override
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
@@ -96,6 +98,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		dessinerInformation(this, g2d);
 		this.enJeu = true;
 	}
+	
 
 	private static void dessinerInformation(Board board, Graphics2D g2d) {
 		int offsetYEnPixel = Carte.getHauteurEnPixel() + tailleCaractereY; //La fin de la carte
@@ -189,7 +192,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
     		    	//Aucun ennemi n'est sur la case
     		    		if(Case.estCaseValidePourDeplacement(x, y)) {
     		    			//Le joueur se deplace
-    		    			animationEnCours = true;
     		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
     		    			//Deselectionne ensuite le joueur
     		    		}
