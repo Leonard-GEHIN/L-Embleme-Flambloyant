@@ -60,8 +60,6 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			j = 0;
 			i++;
 		}
-		System.out.println("Position personnage : " + caseX + " " + caseY);
-		
 		this.ID = nombrePersonnage;
 		nombrePersonnage++;
 	}
@@ -74,8 +72,9 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public void attaque(Personnage cible) {
 	//attaquant attaque et la cible riposte, la riposte est un peu moins efficace
 		//Calcul des degats
-		double degatAttaquant = Methode.minorerParZero(this.getAttaque(null) - cible.getDefense(null));
-		double degatCible = Methode.minorerParZero(cible.getAttaque(null) - this.getDefense(null));
+		double multiplicateur = this.calcBonusArme(cible);
+		double degatAttaquant = Methode.minorerParZero(this.getAttaque(null) - cible.getDefense(null)) * multiplicateur;
+		double degatCible = Methode.minorerParZero(cible.getAttaque(null) - this.getDefense(null)) / multiplicateur;
 		
 		//Debut du combat
 		cible.setPointsDeVie(Methode.minorerParZero( cible.getPointsDeVie() - degatAttaquant ));
@@ -92,6 +91,32 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		}
 	}
 	
+	public double calcBonusArme(Personnage cible) {
+	//Calcul l'efficacite de l'attaque
+		double multiplicateur = 1; //Si les deux classes sont identiques
+		String typeCible = cible.getClasse();
+		if(classe.equals("Epee")) {
+			if(typeCible.equals("Hache"))
+				multiplicateur = 1.2;
+			else if(typeCible.equals("Lance"))
+				multiplicateur = 0.8;
+		}
+		else if(classe.equals("Hache")) {
+			if(typeCible.equals("Lance"))
+				multiplicateur = 1.2;
+			else if(typeCible.equals("Epee"))
+				multiplicateur = 0.8;
+		}
+		else if(classe.equals("Lance")) {
+			if(typeCible.equals("Epee"))
+				multiplicateur = 1.2;
+			else if(typeCible.equals("Hache"))
+				multiplicateur = 0.8;
+		}
+		
+		return multiplicateur;
+	}
+	
 	
 	public void meurt() {
 		this.estMort = true;
@@ -100,6 +125,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		Intelligence maitre = this.estAllie ? Board.joueur : Board.ennemi;
 		maitre.retirerPersonnage(this);
 	}
+	
 	
 	public boolean equals(Personnage personnageTest) {
 		boolean estIdentique = true;
@@ -144,7 +170,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//Affiche les images
 			//les variables offsetMouvement sert a animer les personnages
 			g2d.drawImage(image.getImage(),
-					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY),
+					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY)+1,
 					(int)(sc*31), (int)(sc*31),
 					board);
 		}
@@ -323,6 +349,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//On actualise la position du personnage a la fin du mouvement
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
+				Board.personnagePeutAttaquer();
 			}
 			
 			this.distanceAPourcourir = 0;
@@ -347,7 +374,23 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			*/
 		}
 	}
+
+
+	public boolean peutAttaquer(Intelligence ciblePossible) {
+		boolean attaquePossible = false;
+		
+		for (Personnage cible : ciblePossible.getPersonnages()) {
+			if(this.distance(cible) <= 1) {
+				attaquePossible = true;
+			}
+		}
+		
+		return attaquePossible;
+	}
 	
+	public double distance(Personnage perso) {
+		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 ) + Math.pow( this.caseY-perso.getCaseY(), 2 ) );
+	}
 
 	//Active le debut du tour du personnage
 	public void debutTour() {
@@ -408,5 +451,13 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	 */
 	public String getNom() {
 		return nom;
+	}
+
+
+	/**
+	 * @return the classe
+	 */
+	public static String getClasse() {
+		return classe;
 	}
 }

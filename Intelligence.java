@@ -80,6 +80,11 @@ public abstract class Intelligence extends ObjetAffichable{
 		// On recherche le personnage, on l'enleve apres
 		this.personnages.remove(personnageARetirer);
 	}
+	
+	public void attaquePersonnage(int indicePersonnageAttaquant, int indicePersonnageCible, Intelligence intelCible) {
+		this.personnages.get(indicePersonnageAttaquant).attaque(
+				intelCible.getPersonnages().get(indicePersonnageCible));
+	}
 
 	/**
 	 * @return the personnages

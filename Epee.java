@@ -31,7 +31,7 @@ public class Epee extends Personnage{
 		//Variables static
 		classe = "Epee";
 		ratioPointsDeVie = 0.50;
-		ratioAttaque = 0.30;
+		ratioAttaque = 0.40;
 		ratioDefence = 1 - ratioAttaque - ratioPointsDeVie;
 		
 		String[] tabTempNom = {"Shiida", "Lyndis", "Fir", "Hana"};

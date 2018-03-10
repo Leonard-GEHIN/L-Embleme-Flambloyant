@@ -24,13 +24,16 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
 	protected static Ennemi ennemi = new Ennemi();
-	private boolean personnageSelectionner = false, tourEnnemi = false, enJeu = false;
+	private static boolean personnageSelectionner = false;
+	private boolean tourEnnemi = false;
+	private boolean enJeu = false;
+	private static boolean attenteSelectionCibleAttaque = false;
 	public static boolean animationEnCours = false;
-	private int indicePersonnageSelectionner;
+	private static int indicePersonnageSelectionner;
 	
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final int IMAGE_PAR_SECONDE_VOULU = 10; // Nombre d'image par seconde souhaite (20 = bonne qualite)
+	private final int IMAGE_PAR_SECONDE_VOULU = 20; // Nombre d'image par seconde souhaite (20 = bonne qualite)
 	private final int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
 	private final int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
@@ -151,44 +154,67 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	public void mouseClicked(MouseEvent e) { //Evenement quand il y a un click
 	    int x=(int)(e.getX()/(Application.SCALE * 16)); //16 est la taille en pixel dune case avec un SCALE de 1
-	    int y=(int)(e.getY()/(Application.SCALE * 16));
-	    int caseCibleIndice = -1;
-	    System.out.println(x+", "+y);
+	    int y=(int)(e.getY()/(Application.SCALE * 16));	    
+
+    	int caseCibleIndiceJoueur = joueur.selectionPersonnage(x, y);
+    	int caseCibleIndiceEnnemi = ennemi.selectionPersonnage(x, y);
+    	
 	    if(!tourEnnemi && !animationEnCours && enJeu) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
 	    	//Le joueur essaye de selectionner son personnage
-	    	caseCibleIndice = joueur.selectionPersonnage(x, y);
-	    	if(caseCibleIndice > -1) {
-	    	//Si le joueur clique sur un de ses personnage
-	    		indicePersonnageSelectionner = caseCibleIndice;
+	    	if(caseCibleIndiceJoueur > -1) {
+	    		indicePersonnageSelectionner = caseCibleIndiceJoueur;
 	    		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
 	    		personnageSelectionner = true;
+	    		attenteSelectionCibleAttaque = false;
 	    	}
 	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
 		    //Le joueur deplace son personnage, il ne vise pas un de ses personnage et il a un personnage selectionne
-		    	caseCibleIndice = ennemi.selectionPersonnage(x, y);
-		    	caseCibleIndice = -1; //Simulation que l'ennemi n'est pas la
-		    	if(caseCibleIndice == -1) {
-		    	//Aucun ennemi n'est sur la case
-		    		if(Case.estCaseValidePourDeplacement(x, y)) {
-		    			//Le joueur se deplace
-		    			animationEnCours = true;
-		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
-		    			//Deselectionne ensuite le joueur
-		    			indicePersonnageSelectionner = -1;
-		    			personnageSelectionner = false;
-		    		}
-		    		else{
-		    		//Si aucune case valide n'est selectionner
-		    			indicePersonnageSelectionner = -1;
-		    			personnageSelectionner = false;
-		    			Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);		    		}
-		    	}
-		    	else {
-				    //Le joueur vise un ennemi
-		    	}
-		    }
+	    		if(attenteSelectionCibleAttaque) {
+	    		//Le joueur peut attaquer un ennemi
+	    			if(caseCibleIndiceEnnemi > -1) {
+	    			//Le joueur attaque un ennemi
+	    				joueur.attaquePersonnage(indicePersonnageSelectionner, caseCibleIndiceEnnemi, ennemi);
+	    				//TODO animation d'attaque
+	    			}
+	    			else {
+	    			//Le joueur ne souhaite pas se deplacer
+	    				attenteSelectionCibleAttaque = false;
+	    			}
+	    		}
+	    		else {
+	    		//Le joueur veut deplacer son personnage
+	    			if(caseCibleIndiceEnnemi == -1) {
+    		    	//Aucun ennemi n'est sur la case
+    		    		if(Case.estCaseValidePourDeplacement(x, y)) {
+    		    			//Le joueur se deplace
+    		    			animationEnCours = true;
+    		    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
+    		    			//Deselectionne ensuite le joueur
+    		    		}
+    		    		else{
+    		    		//Si aucune case valide n'est selectionner
+    		    			indicePersonnageSelectionner = -1;
+    		    			personnageSelectionner = false;
+    		    			Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
+    		    		}
+	    			}
+	    		}
+	    	}
 	    }
+	}
+	
+	public static void personnagePeutAttaquer() {
+		if(joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquer(ennemi)) {
+			System.out.println("Attente attaque du joueur activer");
+			attenteSelectionCibleAttaque = true;
+			//TODO calculer les ennemis qu'on peut attaquer et faire une liste
+		}
+		
+		if(!attenteSelectionCibleAttaque) {
+			indicePersonnageSelectionner = -1;
+			personnageSelectionner = false;
+		}
 	}
 
 	@Override
