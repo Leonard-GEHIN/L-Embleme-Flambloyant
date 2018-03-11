@@ -24,7 +24,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0, etapeAnimationCombat = 0;
 	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
 	protected double vitesseX, vitesseY; // en px/ms
-	protected boolean animationCombat = false, estEnMouvement = false;
+	protected boolean animationCombat = false, estEnMouvement = false, attendDeselectionOuAttaque = false;
 
 	//Variables de classe chargees dans la methode static chargerClasse()
 	//Variables servant a calculer les statistiques des personnages
@@ -124,7 +124,10 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		//La cible va contre attaquer
 			degatCible *= 0.8;
 			this.setPointsDeVie(Methode.minorerParZero( this.getPointsDeVie() - degatCible ));
-			this.meurt();
+			
+			if((int)(this.getPointsDeVie()) == 0) {
+				this.meurt();
+			}
 		}
 		
 		//Animation
@@ -212,15 +215,28 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 	
 	
-	public void caseJouable() {
+	public void caseJouable(Intelligence ennemi) {
 		int[][] carte = Carte.getCarte();
-		int profondeur = 4;
-		this.caseJouableRecursif(caseX, caseY, profondeur, carte);
+		int profondeur = 3;
+		
+		int x = this.caseX;
+		int y = this.caseY;
+		carte[y][x] = 10;
+		this.caseJouableRecursif(x - 1, y, profondeur, carte, ennemi);
+		System.out.println("salut");
+		this.caseJouableRecursif(x + 1, y, profondeur, carte, ennemi);
+		System.out.println("salut");
+		this.caseJouableRecursif(x, y + 1, profondeur, carte, ennemi);
+		System.out.println("salut");
+		this.caseJouableRecursif(x, y - 1, profondeur, carte, ennemi);
+		System.out.println("salut");
 	}
 	
 	
-	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte) {
-		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
+	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte, Intelligence ennemi ) {
+		System.out.println("caseX: "+x+ " caseY: "+ y );
+		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length
+				&& !ennemi.caseEstRempliParPersonnage(x, y) ) {
 			int profondeurConsomee = 0;
 			switch(carte[y][x]){
 				case 3: //case normal
@@ -238,7 +254,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			}
 
 			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
-			profondeur-=profondeurConsomee;
+			profondeur -= profondeurConsomee;
 			//Les arbres consomme deux point de mouvements
 			if(profondeur > 0) {
 			//Si la case n'a pas ete visite
@@ -246,15 +262,15 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 				
 				int [] temptab = {x, y};
 				Case.ajouterValeur(temptab);
-				this.caseJouableRecursif(x - 1, y, profondeur, carte);
-				this.caseJouableRecursif(x + 1, y, profondeur, carte);
-				this.caseJouableRecursif(x, y + 1, profondeur, carte);
-				this.caseJouableRecursif(x, y - 1, profondeur, carte);
+				this.caseJouableRecursif(x - 1, y, profondeur, carte, ennemi);
+				this.caseJouableRecursif(x + 1, y, profondeur, carte, ennemi);
+				this.caseJouableRecursif(x, y + 1, profondeur, carte, ennemi);
+				this.caseJouableRecursif(x, y - 1, profondeur, carte, ennemi);
 			}
 		}
 	}
-	
-	
+
+
 	public boolean peutAttaquer(Intelligence ciblePossible) {
 		boolean attaquePossible = false;
 		
@@ -265,12 +281,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		return attaquePossible;
 	}
 	
+
 	public boolean peutAttaquer(Personnage cible) {
 		boolean attaquePossible = false;
 		if(this.distance(cible) <= 1)
 			attaquePossible = true;
 		return attaquePossible;
 	}
+	
 	
 	public double distance(Personnage perso) {
 		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 )
@@ -283,18 +301,30 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		this.tourTerminer = false;
 	}
 	
+	
+	public void peutAttaquerApresDeplacement() {
+		this.attendDeselectionOuAttaque = true;
+	}
+	
+	
+	public void deselectionner() {
+		this.attendDeselectionOuAttaque = false;
+	}
+	
 /*
  * Methode d'affichage et d'animation
  */
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		if(!this.estMort) {			
+		if(!this.estMort) {
 			double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
 			ImageIcon image;
 			//Calcul de l'image
 			if(estEnMouvement)
 				image = imageMouvement[this.directionMouvement][this.compteurSkin];
+			else if(attendDeselectionOuAttaque)
+				image = imageVictoire;
 			else
 				image = imageDebout[this.compteurSkin];
 	
@@ -320,7 +350,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public int dessinerInformation(Board board, Graphics2D g2d, int offsetXEnCase, int offsetYEnPixel) {
 		String[] informationListe = new String[5]; //Nom, PV, attaque, defense
 		//Construction des informations a afficher
-		informationListe[0] = "|Perso " + this.ID;
+		informationListe[0] = "|" + classe + " " + this.ID;
 		informationListe[1] = "|" + this.nom;
 		informationListe[2] = "|PdV:" + (int)(this.getPointsDeVie());
 		informationListe[3] = "|Atk:" + (int)(this.getAttaque(null));
@@ -454,11 +484,16 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		
 		if(finAnimation) {
 		//Variable a reinitialiser a la fin d'une animation
+			this.attendDeselectionOuAttaque = false;
 			if(this.estEnMouvement && !this.animationCombat) {
 			//On actualise la position du personnage a la fin du mouvement
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
 				Board.personnagePeutAttaquerApresDeplacement();
+			}
+			
+			if(animationCombat) {
+				Board.deselectionnePersonnage();
 			}
 			
 			this.tempsAnimation = 0;

@@ -69,8 +69,8 @@ public class Case extends ObjetAffichable {
 		
 		//si indicePersonnageSelectionner vaut -1, aucun personnage n'est selectionner
 		if(indicePersonnageSelectionner > -1)
-			joueur.getPersonnages().get(indicePersonnageSelectionner).caseJouable();
-		
+			joueur.getPersonnages().get(indicePersonnageSelectionner).caseJouable(ennemi);
+
 		if(!caseJouable.isEmpty()) {
 			for (int[] caseJouables : caseJouable) {
 				carteCase[caseJouables[1]][caseJouables[0]] = 1;

@@ -7,11 +7,7 @@ public abstract class Intelligence extends ObjetAffichable{
 	public Intelligence() {
 		super();
 	}
-      
-	/*
-	 * Si joueur: selectionne le personnage a deplacer
-	 * Si ennemi: selectionne l'ennemi a attaquer
-	 */
+	
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
@@ -19,6 +15,17 @@ public abstract class Intelligence extends ObjetAffichable{
 			personnage.dessiner(board, g2d);
 		}
 	}
+	
+	
+	public boolean caseEstRempliParPersonnage(int x, int y) {
+		boolean retour = false;
+		for (Personnage personnage : personnages) {
+			if(personnage.getCaseX() == x && personnage.getCaseY() == y)
+				retour = true;
+		}
+		return retour;
+	}
+	
 	
 	public int dessinerInformation(Board board, Graphics2D g2d, int offsetXEnCase, int offsetYEnPixel) {
 	//Renvoie la taille total de ces information en nombre de caractere
@@ -29,6 +36,7 @@ public abstract class Intelligence extends ObjetAffichable{
 		return offsetXEnCase;
 	}
 	
+	
 	public void ajouterPersonnage(Personnage personnage) {
 		if(this.personnages.size() <= 3) {
 			this.personnages.add(personnage);
@@ -36,11 +44,13 @@ public abstract class Intelligence extends ObjetAffichable{
 		}
 	}
 	
+	
 	public void update() {
 		for (Personnage personnage : this.personnages) {
 			if(!personnage.isEstEnMouvement()) personnage.update();
 		}
 	}
+	
 
 	public int selectionPersonnage(int x, int y) {
 		int retour = -1, i = 0;
@@ -57,6 +67,7 @@ public abstract class Intelligence extends ObjetAffichable{
 		return retour;
 	}
 	
+	
 	public boolean ATerminerSonTour() {
 		boolean tourTerminer = true;
 		for (int i = 0; i < this.personnages.size(); i++) {
@@ -68,6 +79,7 @@ public abstract class Intelligence extends ObjetAffichable{
 		
 		return tourTerminer;
 	}
+	
 	
 	public void debutTour() {
 		for (Personnage personnage : personnages) {
@@ -81,6 +93,7 @@ public abstract class Intelligence extends ObjetAffichable{
 		System.out.println("Personnage retirer");
 		this.personnages.remove(personnageARetirer);
 	}
+	
 	
 	public void attaquePersonnage(int indicePersonnageAttaquant, int indicePersonnageCible, Intelligence intelCible) {
 		this.personnages.get(indicePersonnageAttaquant).attaque(

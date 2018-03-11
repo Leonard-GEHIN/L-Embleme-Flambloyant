@@ -24,11 +24,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static Carte carte;
 	protected static Joueur joueur = new Joueur();
 	protected static Ennemi ennemi = new Ennemi();
-	private static boolean personnageSelectionner = false;
-	private static boolean tourEnnemi = false;
-	private boolean enJeu = false;
-	private static boolean attenteSelectionCibleAttaque = false;
+	private static boolean personnageSelectionner = false, tourEnnemi = false,
+							attendDeselectionOuAttaque = false;
 	public static boolean animationEnCours = false;
+	private boolean enJeu = false;
 	private static int indicePersonnageSelectionner;
 	
 	//Attribut relative au temps
@@ -97,6 +96,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		joueur.dessiner(this, g2d);
 		ennemi.dessiner(this, g2d);
 		dessinerInformation(this, g2d);
+		
+		if(animationEnCours && personnageSelectionner) {
+		//Si il y a une animation du joueur, on le redessine
+			joueur.getPersonnages().get(indicePersonnageSelectionner).dessiner(this, g2d);
+		}
+		
 		this.enJeu = true;
 	}
 	
@@ -136,7 +141,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static void chargerClasse() {
 		Case.chargerClasse();
 		Epee.chargerClasse();
-		//TODO ajout chargerClasse() Hache et Lance
 	}
 
 /*
@@ -148,7 +152,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
     	int caseCibleIndiceJoueur = joueur.selectionPersonnage(x, y);
     	int caseCibleIndiceEnnemi = ennemi.selectionPersonnage(x, y);
-    	System.out.println("ennemi: "+caseCibleIndiceEnnemi + " joueur:"+ caseCibleIndiceJoueur);
+    	
+    	System.out.println("caseJoueur: " + caseCibleIndiceJoueur + " caseEnnemi:" + caseCibleIndiceEnnemi);
 	    if(!tourEnnemi && !animationEnCours && enJeu) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
 	    	if(caseCibleIndiceJoueur > -1) {
@@ -160,11 +165,11 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    		if(caseCibleIndiceEnnemi > -1 && personnageSelectionnerPeutAttaquer(caseCibleIndiceEnnemi)) {
 	    		//Le joueur cible et peut attaquer un ennemi
     				joueur.attaquePersonnage(indicePersonnageSelectionner, caseCibleIndiceEnnemi, ennemi);
-    				deselectionnePersonnage();
-    				attenteSelectionCibleAttaque = false;
+    				attendDeselectionOuAttaque = false;
 	    		}
-	    		else if(Case.estCaseValidePourDeplacement(x, y) && caseCibleIndiceEnnemi == -1) {
-	    		//Le joueur deplace son personnage <=> ne vise pas d'ennemi mais une case jouable
+	    		else if(Case.estCaseValidePourDeplacement(x, y) && caseCibleIndiceEnnemi == -1 && caseCibleIndiceJoueur == -1) {
+	    		//Le joueur deplace son personnage <=> ne vise pas d'ennemi ni un joueur mais une case jouable
+	    		//Les Personnages sont traversables
 	    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
 	    			joueur.getPersonnages().get(indicePersonnageSelectionner).terminerTour();
 	    			//Le personnage est deselectionner via la fonction d'animation
@@ -181,7 +186,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public static void personnagePeutAttaquerApresDeplacement() {
 	//Methode appele apres le deplacement (A la fin de l'animation
 		if(personnageSelectionnerPeutAttaquer()) {
-			attenteSelectionCibleAttaque = true;
+			attendDeselectionOuAttaque = true;
+			joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquerApresDeplacement();
 		}
 		else {
 			deselectionnePersonnage();
@@ -204,6 +210,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 
 	public static void deselectionnePersonnage() {
+		joueur.getPersonnages().get(indicePersonnageSelectionner).deselectionner();
 		indicePersonnageSelectionner = -1;
 		personnageSelectionner = false;
 		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
@@ -212,14 +219,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	public static void selectionnePersonnage(int indicePersoSelectionner) {
 		personnageSelectionner = true;
-		attenteSelectionCibleAttaque = false;
+		attendDeselectionOuAttaque = false;
 		indicePersonnageSelectionner = indicePersoSelectionner;
 		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
 	}
 	
 	
 	private static void echangerTour(){
-		if(!animationEnCours && !attenteSelectionCibleAttaque) {
+		if(!animationEnCours && !attendDeselectionOuAttaque) {
 		//Echange les tour des intelligences
 			if(joueur.ATerminerSonTour() && !tourEnnemi) {
 				System.out.println("C'est maintenant le tour des ennemis");
@@ -242,6 +249,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			imagePasseSansUpdate = 0;
 		}
 	}
+	
 	
 /*
  * Methode implementer du listener de la souris

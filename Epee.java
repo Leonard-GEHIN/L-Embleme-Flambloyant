@@ -9,7 +9,6 @@ public class Epee extends Personnage{
 		int pointsTotal = Methode.nombreAlea(50, 55);
 		
 		int pointsRestant = pointsTotal;
-		//TODO generation des noms
 		
 		//Generation des stat du personnage
 		int nombreStatRestanteACalcule = 3;
@@ -26,7 +25,7 @@ public class Epee extends Personnage{
 		
 		System.out.println("Epee genere : "+this.nom);
 	}
-	
+
 	public static void chargerClasse() {
 		//Variables static
 		classe = "Epee";
@@ -37,7 +36,7 @@ public class Epee extends Personnage{
 		String[] tabTempNom = {"Shiida", "Lyndis", "Fir", "Hana"};
 		tabGenerationNom = tabTempNom;
 		
-		imageVictoire = new ImageIcon(classe + "/victoire.png");
+		imageVictoire = new ImageIcon("Sprite/" + classe + "/victoire.png");
 		
 		//Image debout
 		for (int i = 0; i < imageDebout.length; i++) {
@@ -54,12 +53,6 @@ public class Epee extends Personnage{
 		System.out.println("Classe Epee Charger.");
 	}
 	
-
-	@Override
-	public void meurt() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public double getAttaque(Personnage cible) {
