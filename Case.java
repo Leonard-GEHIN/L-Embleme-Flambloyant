@@ -23,11 +23,7 @@ public class Case extends ObjetAffichable {
 	public void dessiner(Board board, Graphics2D g2d) {
 		double sc = Application.SCALE;
 		ImageIcon image = null;
-		/*
-		float[] scales = {1f, 1f, 1f, 0.1f};
-		float[] offsets = new float[4];
-		RescaleOp rop = new RescaleOp(scales, offsets, null);
-		*/
+
 		Color couleur = new Color(Color.TRANSLUCENT); //Sert a mettre de la transparence pour l'image
 		for (int i = 0; i < carteCase.length; i++) {
 			for (int j = 0; j < carteCase[i].length; j++) {
@@ -83,6 +79,11 @@ public class Case extends ObjetAffichable {
 		
 		for (Personnage persoEnnemi : ennemi.getPersonnages()) {
 			carteCase[persoEnnemi.getCaseY()][persoEnnemi.getCaseX()] = 3;
+		}
+		
+		if(Board.personnageSelectionner && Board.indicePersonnageSelectionner > -1) {
+			carteCase[joueur.getPersonnages().get(Board.indicePersonnageSelectionner).getCaseY()]
+					 [joueur.getPersonnages().get(Board.indicePersonnageSelectionner).getCaseX()] = 1;
 		}
 	}
 
