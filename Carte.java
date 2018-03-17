@@ -38,12 +38,12 @@ public class Carte extends ObjetAffichable {
 		default: // On charge la premiere carte
 			int[][] carteTemp =   { { 0, 3, 0, 0, 0, 4, 3, 0, 0, 0, 3, 0, 0, 0, 0 },
 									{ 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0 }, 
-									{ 3, 3, 3, 4, 3, 3, 4, 0, 3, 2, 4, 3, 3, 3, 3 },
-									{ 4, 3, 3, 3, 3, 3, 3, 3, 0, 1, 2, 0, 3, 3, 3 }, 
-									{ 3, 3, 4, 3, 3, 4, 3, 4, 1, 2, 3, 0, 0, 3, 3 },
-									{ 3, 3, 3, 4, 3, 3, 3, 3, 4, 1, 3, 3, 3, 3, 3 }, 
+									{ 3, 2, 3, 4, 3, 3, 4, 0, 3, 3, 4, 3, 3, 3, 3 },
+									{ 4, 3, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0, 3, 3, 3 }, 
+									{ 3, 3, 4, 3, 3, 4, 3, 4, 3, 3, 3, 0, 0, 3, 3 },
+									{ 3, 3, 3, 4, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3 }, 
 									{ 4, 3, 4, 4, 3, 3, 4, 3, 4, 4, 3, 3, 0, 0, 3 },
-									{ 4, 3, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 3, 0, 3 }, 
+									{ 4, 1, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 3, 0, 3 }, 
 									{ 3, 3, 3, 4, 3, 4, 4, 4, 3, 3, 3, 3, 3, 0, 0 },
 									{ 3, 4, 3, 3, 3, 3, 4, 3, 4, 3, 0, 0, 0, 0, 0 } };
 			carte = carteTemp;
@@ -60,18 +60,18 @@ public class Carte extends ObjetAffichable {
 		}
 	}
 
+	
 	public static void libererCaseApparition(int x, int y) {
 		if (carte[y][x] == 1 || carte[y][x] == 2)
 			carte[y][x] = 3;
 	}
+	
 
 	//Enleve les case ou aucun personnage n'est apparu
 	public static void enleverCaseApparition() {
 		for (int j = 0; j < carte.length; j++) {
 			for (int i = 0; i < carte[0].length; i++) {
-				if(carte[j][i] == 1 || carte[j][i] == 2){
-					carte[j][i] = 3;
-				}
+				libererCaseApparition(i, j);
 			}
 		}
 	}
@@ -83,7 +83,7 @@ public class Carte extends ObjetAffichable {
 	 * Les test pour valider la case et la possibilite du personnage pour aller a la case on deja ete suffisemment evaluer
 	 */
 		//En modifiant le personnage ci-dessous, nous modifiont aussi celui contenu dans l'intelligence
-		Personnage personnageADeplacer = intelligence.getPersonnages().get(indicePersonnageSelectionner);
+		Personnage personnageADeplacer = intelligence.getPersonnages(indicePersonnageSelectionner);
 		personnageADeplacer.deplacer(x, y);
 	}
 	

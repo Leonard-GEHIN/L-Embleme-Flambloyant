@@ -14,6 +14,16 @@ import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+/*
+ * Ecrire l'IA:
+ * selection de la case pour aller attaque
+ * deplacer le personnage
+ * finir le tour
+ * 
+ * faire les autres cas dans l'IA
+ */
+
+
 @SuppressWarnings("serial")
 public class Board extends JPanel implements ActionListener, MouseListener {
 	//Attribut relative a l'affichage
@@ -22,13 +32,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	//Attribut relative au element de jeu
 	private static Carte carte;
-	protected static Joueur joueur = new Joueur();
+	protected static Joueur joueur;
 	protected static Ennemi ennemi = new Ennemi();
-	private static boolean personnageSelectionner = false, tourEnnemi = false,
-							attendDeselectionOuAttaque = false;
-	public static boolean animationEnCours = false;
+	private static boolean attendDeselectionOuAttaque = false;
+	public static boolean personnageSelectionner = false,animationEnCours = false, tourEnnemi = false;
 	private boolean enJeu = false;
-	private static int indicePersonnageSelectionner;
+	public static int indicePersonnageSelectionner = -1;
 	
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
@@ -38,9 +47,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private double tempsTemp = System.currentTimeMillis();
 	private int nombreImageParSeconde = 0;
 	private static int imagePasseSansUpdate = 0;
-	
-	//Attribut de son
-	//public Sound snd_loop = new Sound("");
 	
 	
 	public Board() {
@@ -52,18 +58,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		setBackground(Color.WHITE);
 		timer = new Timer(DELAY_IMAGE,this); 
 		timer.start(); //Le timer démarre ici
-		//SOUND
-		//snd_loop.play(); //Lance la musique
-		//snd_loop.loop(); //Répète la musique lorsqu'elle est finie
 
 		//Initialise mes variables
 		chargerClasse();
 		carte = new Carte();
+		joueur = new Joueur("Leonard");
 		joueur.ajouterPersonnage(new Epee(true));
-		joueur.ajouterPersonnage(new Epee(true));
-		joueur.ajouterPersonnage(new Epee(true));
-		ennemi.ajouterPersonnage(new Epee(false));
-		ennemi.ajouterPersonnage(new Epee(false));
 		ennemi.ajouterPersonnage(new Epee(false));
 		Carte.enleverCaseApparition();
 		Carte.afficherCarteTerminal();
@@ -99,7 +99,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		
 		if(animationEnCours && personnageSelectionner) {
 		//Si il y a une animation du joueur, on le redessine
-			joueur.getPersonnages().get(indicePersonnageSelectionner).dessiner(this, g2d);
+			joueur.getPersonnages(indicePersonnageSelectionner).dessiner(this, g2d);
 		}
 		
 		this.enJeu = true;
@@ -123,9 +123,39 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		if(enJeu) {
 			miseAJourDesIndicesDImage();
 			//Action de jeu
-			echangerTour();
+			if(!finPartie()) {
+				echangerTour();
+				if(tourEnnemi) {
+					ennemi.tourEnnemi();
+					System.out.println("Calcul de l'IA");
+				}
+			}
 		}
 		repaint(); //Affiche l'image
+	}
+
+	private boolean finPartie() {
+		boolean partieFinie = false;
+		if(!animationEnCours) {
+			if(joueur.getPersonnages().size() == 0) {
+				System.out.println("L'ennemi a triomphe");
+				ennemi.victoire();
+				partieFinie = true;
+			}
+			if(ennemi.getPersonnages().size() == 0) {
+				System.out.println("Bravo, vous avez vaincu !");
+				joueur.victoire();
+				partieFinie = true;
+			}
+			
+			if(partieFinie) {
+				Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
+				timer.stop();
+				repaint();
+				System.out.println("La partie est maintenant termine");
+			}
+		}
+		return partieFinie;
 	}
 
 	private class TAdapter extends KeyAdapter{ // Méthode qui s'active quand l'état d'une touche change
@@ -150,15 +180,23 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    int x=(int)(e.getX()/(Application.SCALE * 16)); //16 est la taille en pixel dune case avec un SCALE de 1
 	    int y=(int)(e.getY()/(Application.SCALE * 16));	    
 
-    	int caseCibleIndiceJoueur = joueur.selectionPersonnage(x, y);
-    	int caseCibleIndiceEnnemi = ennemi.selectionPersonnage(x, y);
-    	
-    	System.out.println("caseJoueur: " + caseCibleIndiceJoueur + " caseEnnemi:" + caseCibleIndiceEnnemi);
-	    if(!tourEnnemi && !animationEnCours && enJeu) {
+    	int caseCibleIndiceJoueur = joueur.selectionPersonnageJouable(x, y);
+    	int caseCibleIndiceEnnemi = ennemi.selectionIndicePersonnage(x, y);
+    	if(!tourEnnemi && !animationEnCours && enJeu) {
 	    //Les cliques durant le tour ennemi n'ont aucuns effets
 	    	if(caseCibleIndiceJoueur > -1) {
 	    	//Le joueur selectionne un personnage
-	    		selectionnePersonnage(caseCibleIndiceJoueur);
+	    		
+	    		if(indicePersonnageSelectionner == caseCibleIndiceJoueur) {
+	    		//Le joueur veut terminer le tour d'un personnage
+	    			joueur.getPersonnages(caseCibleIndiceJoueur).terminerTour();
+	    			deselectionnePersonnage();
+	    		}
+	    		else {
+	    		//Le joueur veut selectionner un nouveau personnage
+	    			if(personnageSelectionner) deselectionnePersonnage();
+		    		selectionnePersonnage(caseCibleIndiceJoueur);
+	    		}
 	    	}
 	    	else if(personnageSelectionner && indicePersonnageSelectionner > -1) {
 	    	//Le joueur a deja selectionner un personnage et souhaite l'utiliser
@@ -171,7 +209,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	    		//Le joueur deplace son personnage <=> ne vise pas d'ennemi ni un joueur mais une case jouable
 	    		//Les Personnages sont traversables
 	    			Carte.deplacerPersonnage(x, y, joueur, indicePersonnageSelectionner);
-	    			joueur.getPersonnages().get(indicePersonnageSelectionner).terminerTour();
+	    			joueur.getPersonnages(indicePersonnageSelectionner).terminerTour();
 	    			//Le personnage est deselectionner via la fonction d'animation
 	    		}
 	    		else if(caseCibleIndiceEnnemi == -1 && caseCibleIndiceJoueur == -1) {
@@ -184,10 +222,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	
 	public static void personnagePeutAttaquerApresDeplacement() {
-	//Methode appele apres le deplacement (A la fin de l'animation
+	//Methode appele apres le deplacement (A la fin de l'animation)
 		if(personnageSelectionnerPeutAttaquer()) {
 			attendDeselectionOuAttaque = true;
-			joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquerApresDeplacement();
+			joueur.getPersonnages(indicePersonnageSelectionner).peutAttaquerApresDeplacement();
 		}
 		else {
 			deselectionnePersonnage();
@@ -196,23 +234,24 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	
 	public static boolean personnageSelectionnerPeutAttaquer() {
-		return joueur.getPersonnages().get(indicePersonnageSelectionner).peutAttaquer(ennemi);
+		return joueur.getPersonnages(indicePersonnageSelectionner).peutAttaquer(ennemi);
 	}
 	
 	public static boolean personnageSelectionnerPeutAttaquer(int indice){
 		boolean peutAttaquer = false;
 		 if(indice >= 0)
-			 peutAttaquer = joueur.getPersonnages().get(indicePersonnageSelectionner).
-									peutAttaquer(ennemi.getPersonnages().get(indice));
+			 peutAttaquer = joueur.getPersonnages(indicePersonnageSelectionner).
+									peutAttaquer(ennemi.getPersonnages(indice));
 		
 		return peutAttaquer;
 	}
 	
 
 	public static void deselectionnePersonnage() {
-		joueur.getPersonnages().get(indicePersonnageSelectionner).deselectionner();
+		joueur.getPersonnages(indicePersonnageSelectionner).deselectionner();
 		indicePersonnageSelectionner = -1;
 		personnageSelectionner = false;
+		attendDeselectionOuAttaque = false;
 		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
 	}
 	

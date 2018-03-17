@@ -40,7 +40,6 @@ public abstract class Intelligence extends ObjetAffichable{
 	public void ajouterPersonnage(Personnage personnage) {
 		if(this.personnages.size() <= 3) {
 			this.personnages.add(personnage);
-			System.out.println("Personnage ajoute au joueur");
 		}
 	}
 	
@@ -52,19 +51,29 @@ public abstract class Intelligence extends ObjetAffichable{
 	}
 	
 
-	public int selectionPersonnage(int x, int y) {
-		int retour = -1, i = 0;
+	public int selectionPersonnageJouable(int x, int y) {
+	//renvoie l'indice du personnage situe en (x,y). et -1 si il n'y a pas de personnage a cette case
+		int indicePersonnage = this.selectionIndicePersonnage(x, y);
+		
+		if(!(indicePersonnage > -1 && !this.personnages.get(indicePersonnage).isTourTerminer())) {
+		//Si le personnage n'est pas jouable, on renvoie -1
+			indicePersonnage = -1;
+		}
+		return indicePersonnage;
+	}
+	
+	public int selectionIndicePersonnage(int x, int y) {
+		int indicePersonnage = -1, i = 0;
 		boolean rechercheFinie = false;
-
 		while( i < this.personnages.size() && !rechercheFinie ) {
-			if(this.personnages.get(i).estPresent(x, y) && !this.personnages.get(i).isTourTerminer()) {
-				// Il y a un seul personnage sur une case, pas besoin d'arreter le for()
-				retour = i;
+			if(this.personnages.get(i).estPresent(x, y)) {
+				// Il y a un seul personnage sur une case, on peut arreter la boucle
+				indicePersonnage = i;
 				rechercheFinie = true;
 			}
 			i++;
 		}
-		return retour;
+		return indicePersonnage;
 	}
 	
 	
@@ -90,14 +99,19 @@ public abstract class Intelligence extends ObjetAffichable{
 
 	public void retirerPersonnage(Personnage personnageARetirer) {
 		// On recherche le personnage, on l'enleve apres
-		System.out.println("Personnage retirer");
 		this.personnages.remove(personnageARetirer);
 	}
 	
 	
 	public void attaquePersonnage(int indicePersonnageAttaquant, int indicePersonnageCible, Intelligence intelCible) {
 		this.personnages.get(indicePersonnageAttaquant).attaque(
-				intelCible.getPersonnages().get(indicePersonnageCible));
+				intelCible.getPersonnages(indicePersonnageCible));
+	}
+	
+	public void victoire() {
+		for (Personnage perso : personnages) {
+			perso.victoire();
+		}
 	}
 
 	/**
@@ -105,6 +119,13 @@ public abstract class Intelligence extends ObjetAffichable{
 	 */
 	public ArrayList<Personnage> getPersonnages() {
 		return this.personnages;
+	}
+	
+
+	public Personnage getPersonnages(int indice) {
+	//Renvoie null si l'indice n'existe pas, le personnage voulu sinon
+	//Cela ajoute une securite
+		return indice <= personnages.size()-1 ? personnages.get(indice) : null;
 	}
 }
 

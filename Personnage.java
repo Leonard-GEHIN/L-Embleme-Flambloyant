@@ -22,9 +22,10 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	protected double distanceAPourcourir = 0, multiplicateurVitesse = 1, tempsAnimation = 0;
 	protected int directionMouvement = 0, compteurSkin = Methode.nombreAlea(0, 3);
 	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0, etapeAnimationCombat = 0;
-	protected int nouvelleCaseX, nouvelleCaseY; //Stock les prochaine valeur du personnage durant l'animation
+	protected int nouvelleCaseX = -1, nouvelleCaseY = -1; //Stock les prochaine valeur du personnage durant l'animation
 	protected double vitesseX, vitesseY; // en px/ms
-	protected boolean animationCombat = false, estEnMouvement = false, attendDeselectionOuAttaque = false;
+	protected boolean animationCombat = false, estEnMouvement = false, attendDeselectionOuAttaque = false,
+						victoire = false;
 
 	//Variables de classe chargees dans la methode static chargerClasse()
 	//Variables servant a calculer les statistiques des personnages
@@ -107,17 +108,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public void attaque(Personnage cible) {
 	//attaquant attaque et la cible riposte, la riposte est un peu moins efficace
 		//Calcul des degats
-		double multiplicateur = this.calcBonusArme(cible);
-		double degatAttaquant = Methode.minorerParZero(this.getAttaque(null) - cible.getDefense(null)) * multiplicateur;
-		double degatCible = Methode.minorerParZero(cible.getAttaque(null) - this.getDefense(null)) / multiplicateur;
+		double degatAttaquant = this.getDegat(cible);
+		double degatCible = cible.getDegat(this);
 		
 		//Debut du combat
 		cible.setPointsDeVie(Methode.minorerParZero( cible.getPointsDeVie() - degatAttaquant ));
 		
-		System.out.println("Pdv: " + cible.getPointsDeVie());
 		if((int)(cible.getPointsDeVie()) == 0) {
 		//La cible est morte
-			System.out.println("On va entrer dans la fonction de mort");
 			cible.meurt();
 		}
 		else {
@@ -131,17 +129,21 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		}
 		
 		//Animation
-		//Calcul vitesse
 		this.initialiserAnimatiom(this.caseX, this.caseY,
 								  cible.getCaseX(), cible.getCaseY(), "Combat");
 		this.terminerTour();
 	}
 	
 	
+	public double getDegat(Personnage cible) {
+		double multiplicateur = this.calcBonusArme(cible);
+		return  Methode.minorerParZero(this.getAttaque(null) - cible.getDefense(null)) * multiplicateur;
+	}
+	
+	
 	public void meurt() {
 		this.estMort = true;
 
-		System.out.println("Personnage mort");
 		//On enleve le personnage de l'equipe de son intelligence
 		Intelligence maitre = this.estAllie ? Board.joueur : Board.ennemi;
 		maitre.retirerPersonnage(this);
@@ -151,7 +153,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public double calcBonusArme(Personnage cible) {
 	//Calcul l'efficacite de l'attaque
 		double multiplicateur = 1; //Si les deux classes sont identiques
-		String typeCible = cible.getClasse();
+		String typeCible = classe;
 		if(classe.equals("Epee")) {
 			if(typeCible.equals("Hache"))
 				multiplicateur = 1.2;
@@ -179,7 +181,11 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
  * Methodes utile a d'autre clase et / ou d'autre methodes
  */
 	
-
+	public void victoire() {
+		this.victoire = true;
+		System.out.println("salut");
+	}
+	
 	public void terminerTour() {
 		this.tourTerminer = true;
 	}
@@ -223,18 +229,13 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		int y = this.caseY;
 		carte[y][x] = 10;
 		this.caseJouableRecursif(x - 1, y, profondeur, carte, ennemi);
-		System.out.println("salut");
 		this.caseJouableRecursif(x + 1, y, profondeur, carte, ennemi);
-		System.out.println("salut");
 		this.caseJouableRecursif(x, y + 1, profondeur, carte, ennemi);
-		System.out.println("salut");
 		this.caseJouableRecursif(x, y - 1, profondeur, carte, ennemi);
-		System.out.println("salut");
 	}
 	
 	
 	protected void caseJouableRecursif(int x, int y, int profondeur, int[][] carte, Intelligence ennemi ) {
-		System.out.println("caseX: "+x+ " caseY: "+ y );
 		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length
 				&& !ennemi.caseEstRempliParPersonnage(x, y) ) {
 			int profondeurConsomee = 0;
@@ -244,8 +245,9 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 					break;
 				case 4: //Case d'arbre
 					profondeurConsomee = 2;
+					//Les arbres consomme deux point de mouvements
 					break;
-				case 10: //Case valide
+				case 10: //Case deja valide
 					profondeurConsomee = 100;
 					break;
 				case 0: //case vide
@@ -255,9 +257,8 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 
 			if(profondeurConsomee == 0 )System.out.println("Case inconnue");
 			profondeur -= profondeurConsomee;
-			//Les arbres consomme deux point de mouvements
 			if(profondeur > 0) {
-			//Si la case n'a pas ete visite
+				//Si on a assez de point pour aller dans la case
 				carte[y][x] = 10; //On valide la case
 				
 				int [] temptab = {x, y};
@@ -291,8 +292,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	
 	public double distance(Personnage perso) {
-		return Math.sqrt( Math.pow( this.caseX-perso.getCaseX(), 2 )
-						  + Math.pow( this.caseY-perso.getCaseY(), 2 ) );
+		return Methode.distance(this.caseX, this.caseY, perso.getCaseX(), perso.getCaseY());
 	}
 
 	
@@ -310,6 +310,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public void deselectionner() {
 		this.attendDeselectionOuAttaque = false;
 	}
+
 	
 /*
  * Methode d'affichage et d'animation
@@ -323,7 +324,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//Calcul de l'image
 			if(estEnMouvement)
 				image = imageMouvement[this.directionMouvement][this.compteurSkin];
-			else if(attendDeselectionOuAttaque)
+			else if(attendDeselectionOuAttaque || victoire)
 				image = imageVictoire;
 			else
 				image = imageDebout[this.compteurSkin];
@@ -485,16 +486,23 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		if(finAnimation) {
 		//Variable a reinitialiser a la fin d'une animation
 			this.attendDeselectionOuAttaque = false;
-			if(this.estEnMouvement && !this.animationCombat) {
-			//On actualise la position du personnage a la fin du mouvement
+			
+			if( !(nouvelleCaseX == -1 && nouvelleCaseY == -1) ) {
+			//Si il y a eu deplacement, on met a jour les positions
 				this.caseX = this.nouvelleCaseX;
 				this.caseY = this.nouvelleCaseY;
+			}
+			
+			if(this.estEnMouvement && !this.animationCombat && this.estAllie) {
+			//On test si le joueur peut attaquer apres son deplacement
 				Board.personnagePeutAttaquerApresDeplacement();
 			}
 			
-			if(animationCombat) {
+			if(animationCombat && this.estAllie) {
+			//Si le joueur attaque, on deselectionne son personnage
 				Board.deselectionnePersonnage();
 			}
+			
 			
 			this.tempsAnimation = 0;
 			this.distanceAPourcourir = 0;
@@ -506,18 +514,18 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			this.directionMouvement = 0;
 			this.estEnMouvement = false;
 			this.tickAnimationUtilise = 0;
-			this.nouvelleCaseX = 0;
-			this.nouvelleCaseY = 0;
+			this.nouvelleCaseX = -1;
+			this.nouvelleCaseY = -1;
 			this.timer.stop();
 			this.animationCombat = false;
 			Board.animationEnCours = false; //Le jeu peut reprendre
 
 			Case.genererCarte(Board.joueur, Board.ennemi, -1);
-			/*
-			//Pour porter une attaque
-			//On peut  faire une variale vaAttaquer et une variable cible
-			this.attaque(ennemi); //Qui declenche l'anim d'attaque
-			*/
+			
+			if(IntelligenceArtificiel.personnageEnnemiPeutAttaquer) {
+				this.attaque(Board.joueur.getPersonnages(IntelligenceArtificiel.personnageJoueurCible));
+				IntelligenceArtificiel.personnageAAttaquer();
+			}
 		}
 	}
 
@@ -584,6 +592,10 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public static String getClasse() {
 		return classe;
 	}
+
+
+
+	
 
 
 

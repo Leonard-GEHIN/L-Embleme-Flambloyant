@@ -65,7 +65,7 @@ public class Case extends ObjetAffichable {
 		
 		//si indicePersonnageSelectionner vaut -1, aucun personnage n'est selectionner
 		if(indicePersonnageSelectionner > -1)
-			joueur.getPersonnages().get(indicePersonnageSelectionner).caseJouable(ennemi);
+			joueur.getPersonnages(indicePersonnageSelectionner).caseJouable(ennemi);
 
 		if(!caseJouable.isEmpty()) {
 			for (int[] caseJouables : caseJouable) {
@@ -82,8 +82,8 @@ public class Case extends ObjetAffichable {
 		}
 		
 		if(Board.personnageSelectionner && Board.indicePersonnageSelectionner > -1) {
-			carteCase[joueur.getPersonnages().get(Board.indicePersonnageSelectionner).getCaseY()]
-					 [joueur.getPersonnages().get(Board.indicePersonnageSelectionner).getCaseX()] = 1;
+			carteCase[joueur.getPersonnages(Board.indicePersonnageSelectionner).getCaseY()]
+					 [joueur.getPersonnages(Board.indicePersonnageSelectionner).getCaseX()] = 1;
 		}
 	}
 
