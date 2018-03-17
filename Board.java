@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Scanner;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -62,13 +63,81 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//Initialise mes variables
 		chargerClasse();
 		carte = new Carte();
-		joueur = new Joueur("Leonard");
-		joueur.ajouterPersonnage(new Epee(true));
-		ennemi.ajouterPersonnage(new Epee(false));
+		creationJoueur();
+		creationEnnemi();
 		Carte.enleverCaseApparition();
 		Carte.afficherCarteTerminal();
 		Case.genererCarte(joueur, ennemi, -1);
-		
+	}
+	
+	
+	private static void creationJoueur() {
+    	Scanner sc = new Scanner(System.in);
+    	System.out.println("Entrez votre nom.");
+    	String nom = sc.nextLine();
+    	Board.joueur = new Joueur(nom);
+
+    	System.out.println("Voulez-vous une equipe equilibre preparee ou composez votre propre equipe ? (y/n)");
+    	char choix = sc.nextLine().charAt(0);
+    	if(choix == 'y') {
+    		Board.joueur.ajouterPersonnage(new Hache(true));
+    		Board.joueur.ajouterPersonnage(new Epee(true));
+    		Board.joueur.ajouterPersonnage(new Lance(true));
+    	}
+    	else {
+    		int nombreGuerrierChoisi = 0, choixGuerrier;
+    		String classe = "";
+			System.out.println("Choississez vos trois guerriers parmis les trois classes suivante :");
+    		while(nombreGuerrierChoisi < 3) {
+    			System.out.println("-1 : Epeiste (Guerrier equilibre)\n"
+	    			+ "-2 : Barbare (Guerrier ayant une plus grande defence)\n"
+	    			+ "-3 : Halbardier (Guerrier une plus grande attaque)\n");
+    			choixGuerrier = sc.nextInt();
+    			
+    			if(0 < choixGuerrier && choixGuerrier < 4) {
+        			nombreGuerrierChoisi++;
+    				switch(choixGuerrier) {
+    				case 1:
+    		    		Board.joueur.ajouterPersonnage(new Epee(true));
+    		    		classe = "Epeiste";
+    					break;
+    				case 2:
+    		    		Board.joueur.ajouterPersonnage(new Hache(true));
+    		    		classe = "Barbare";
+    					break;
+    				case 3:
+    		    		Board.joueur.ajouterPersonnage(new Lance(true));
+    		    		classe = "Halbardier";
+    					break;
+    				}
+    				System.out.println(classe + " ajoute avec succes.");
+    			}
+    			else {
+    				System.out.println("Entrez clavier non comprise, veillez ressayer.");
+    			}
+    		}
+    	}
+    	sc.close();
+    }
+
+	
+	private static void creationEnnemi() {
+		Personnage persoTemp = null;
+		for (int i = 0; i < 3; i++) {
+			switch(Methode.nombreAlea(1, 3)) {
+			case 1:
+				persoTemp = new Epee(false);
+				break;
+			case 2:
+				persoTemp = new Hache(false);
+				break;
+			case 3:
+				persoTemp = new Lance(false);
+				break;
+			}
+			
+			ennemi.ajouterPersonnage(persoTemp);
+		}
 	}
 
 	
@@ -171,6 +240,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static void chargerClasse() {
 		Case.chargerClasse();
 		Epee.chargerClasse();
+		Lance.chargerClasse();
+		Hache.chargerClasse();
 	}
 
 /*

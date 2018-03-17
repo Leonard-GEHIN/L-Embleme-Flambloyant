@@ -1,4 +1,6 @@
 import java.awt.EventQueue;
+import java.util.Scanner;
+
 import javax.swing.JFrame;
 @SuppressWarnings("serial")
 public class Application extends JFrame {
@@ -27,3 +29,10 @@ public class Application extends JFrame {
         });
     }
 }
+
+
+
+
+
+
+

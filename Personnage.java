@@ -32,13 +32,8 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	protected static double ratioAttaque;
 	protected static double ratioDefence;
 	protected static double ratioPointsDeVie;
-	
-	protected static String[] tabGenerationNom = new String[4];
-	protected static String classe;
 
-	protected static ImageIcon imageVictoire;
-	protected static ImageIcon[] imageDebout = new ImageIcon[3];
-	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][4];
+	protected static ImageIcon image; //Contient l'image a afficher
 
 	
 	//Constructeur utiliser dans les enfants
@@ -75,7 +70,10 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	public abstract double getAttaque(Personnage cible);
 	public abstract double getDefense(Personnage cible);
-	
+	public abstract String getClasse();
+	public abstract String[] getTabGenerationNom();
+	public abstract ImageIcon getImage();
+	public abstract void update();
 	
 /*
  * Methode de generation
@@ -83,7 +81,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 
 	//Donne un nom au personnage en fonction de sa classe
 	public String genererNom() {
-		return  tabGenerationNom[Methode.nombreAlea(0, 3)];
+		return  this.getTabGenerationNom()[Methode.nombreAlea(0, 3)];
 	}
 	
 	
@@ -153,20 +151,20 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public double calcBonusArme(Personnage cible) {
 	//Calcul l'efficacite de l'attaque
 		double multiplicateur = 1; //Si les deux classes sont identiques
-		String typeCible = classe;
-		if(classe.equals("Epee")) {
+		String typeCible = cible.getClasse();
+		if(this.getClasse().equals("Epee")) {
 			if(typeCible.equals("Hache"))
 				multiplicateur = 1.2;
 			else if(typeCible.equals("Lance"))
 				multiplicateur = 0.8;
 		}
-		else if(classe.equals("Hache")) {
+		else if(this.getClasse().equals("Hache")) {
 			if(typeCible.equals("Lance"))
 				multiplicateur = 1.2;
 			else if(typeCible.equals("Epee"))
 				multiplicateur = 0.8;
 		}
-		else if(classe.equals("Lance")) {
+		else if(this.getClasse().equals("Lance")) {
 			if(typeCible.equals("Epee"))
 				multiplicateur = 1.2;
 			else if(typeCible.equals("Hache"))
@@ -320,14 +318,8 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public void dessiner(Board board, Graphics2D g2d) {
 		if(!this.estMort) {
 			double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
-			ImageIcon image;
-			//Calcul de l'image
-			if(estEnMouvement)
-				image = imageMouvement[this.directionMouvement][this.compteurSkin];
-			else if(attendDeselectionOuAttaque || victoire)
-				image = imageVictoire;
-			else
-				image = imageDebout[this.compteurSkin];
+			ImageIcon image = this.getImage();
+			
 	
 			//Changement de la police
 			int taillePoliceY = (int)(Application.SCALE*4);
@@ -348,10 +340,14 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 
 
+	
+
+
+
 	public int dessinerInformation(Board board, Graphics2D g2d, int offsetXEnCase, int offsetYEnPixel) {
 		String[] informationListe = new String[5]; //Nom, PV, attaque, defense
 		//Construction des informations a afficher
-		informationListe[0] = "|" + classe + " " + this.ID;
+		informationListe[0] = "|" + this.getClasse() + " " + this.ID;
 		informationListe[1] = "|" + this.nom;
 		informationListe[2] = "|PdV:" + (int)(this.getPointsDeVie());
 		informationListe[3] = "|Atk:" + (int)(this.getAttaque(null));
@@ -371,12 +367,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	}
 	
 	
-	public void update() {
-		if(estEnMouvement)
-			compteurSkin = ( compteurSkin + 1 ) % imageMouvement[0].length;
-		else
-			compteurSkin = ( compteurSkin + 1 ) % imageDebout.length;
-	}
+	
 
 
 	public void deplacer(int nouvelleCaseX, int nouvelleCaseY) {
@@ -584,19 +575,4 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	public String getNom() {
 		return nom;
 	}
-
-
-	/**
-	 * @return the classe
-	 */
-	public static String getClasse() {
-		return classe;
-	}
-
-
-
-	
-
-
-
 }

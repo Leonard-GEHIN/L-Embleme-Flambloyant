@@ -1,6 +1,13 @@
 import javax.swing.ImageIcon;
 
-public class Epee extends Personnage{	
+public class Epee extends Personnage{
+
+	protected static String[] tabGenerationNom = new String[4];
+	protected static String classe;
+	protected static ImageIcon imageVictoire;
+	protected static ImageIcon[] imageDebout = new ImageIcon[3];
+	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][4];
+	
 	public Epee (boolean personnageJoueur) {
 		super(personnageJoueur);
 		/*
@@ -50,9 +57,29 @@ public class Epee extends Personnage{
 				imageMouvement[j][i] = new ImageIcon("Sprite/" + classe + "/" + ordreImage[j] + " "+ i + ".png");
 			}	
 		}
-		System.out.println("Classe Epee Charger.");
 	}
 	
+	//Les methodes getImage() et update() sont positionner dans les classes Epee, Hache et Lance et non dans Personnage afin de correctement charger et utiliser les images dans la memoire et. Si nous chargeons les images dans la classe Personnage, on peut ne pas charger des images de differentes classes en meme temps.
+	@Override
+	public ImageIcon getImage() {
+	//Calcul de l'image
+		ImageIcon image = null;
+		if(estEnMouvement)
+			image = imageMouvement[this.directionMouvement][this.compteurSkin];
+		else if(attendDeselectionOuAttaque || victoire)
+			image = imageVictoire;
+		else
+			image = imageDebout[this.compteurSkin];
+		return image;
+	}
+	
+	@Override
+	public void update() {
+		if(estEnMouvement)
+			compteurSkin = ( compteurSkin + 1 ) % imageMouvement[0].length;
+		else
+			compteurSkin = ( compteurSkin + 1 ) % imageDebout.length;
+	}
 
 	@Override
 	public double getAttaque(Personnage cible) {
@@ -62,6 +89,16 @@ public class Epee extends Personnage{
 	@Override
 	public double getDefense(Personnage cible) {
 		return this.defense;
+	}
+
+	@Override
+	public String getClasse() {
+		return classe;
+	}
+
+	@Override
+	public String[] getTabGenerationNom() {
+		return tabGenerationNom;
 	}
 }
 
