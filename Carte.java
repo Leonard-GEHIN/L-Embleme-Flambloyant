@@ -24,12 +24,14 @@ public class Carte extends ObjetAffichable {
 
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
+		double sc = Application.SCALE*0.58;
+
 		g2d.drawImage(imageCarte.getImage(), 0, 0,
-				(int) (Application.SCALE * 240 - 1), getHauteurEnPixel(), board);
+				getLargeurEnPixel(), getHauteurEnPixel(), board);
 		g2d.drawImage(imageTriangle.getImage(),
-				(int) (getHauteurEnPixel()-imageTriangle.getIconWidth()*Application.SCALE),
-				(int) (Application.SCALE * 240 - 1),
-				imageTriangle.getIconWidth(), imageTriangle.getIconHeight(), board);
+				(int) (getLargeurEnPixel()-imageTriangle.getIconWidth()*sc), getHauteurEnPixel(),
+				(int) (imageTriangle.getIconWidth()*sc),
+				(int) (imageTriangle.getIconHeight()*sc), board);
 	}
 
 	public static void chargerCarte(int nouveauNumeroCarte) {
@@ -117,6 +119,12 @@ public class Carte extends ObjetAffichable {
 	public static int getHauteurEnPixel() {
 		return (int) (Application.SCALE * 160 - 1);
 	}
+	
+	public static int getLargeurEnPixel() {
+		return (int) (Application.SCALE * 240 - 1);
+	}
+	
+	
 }
 
 

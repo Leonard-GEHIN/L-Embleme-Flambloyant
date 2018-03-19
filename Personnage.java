@@ -332,7 +332,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//les variables offsetMouvement sert a animer les personnages
 			g2d.drawImage(image.getImage(),
 					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY)+1,
-					(int)(sc*31), (int)(sc*31),
+					(int)(sc*image.getIconWidth()), (int)(sc*image.getIconWidth()),
 					board);
 			g2d.drawString(""+this.ID,
 					(int)( sc*( 16*( caseX+1 ) )-taillePoliceY ),
