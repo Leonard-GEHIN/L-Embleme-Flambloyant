@@ -5,7 +5,7 @@ public class Methode {
 	}
 	
 	public static double minorerParZero(double x) {
-		return x>0 ? x:0;
+		return x>0 ? x : 0;
 	}
 	
 	public static double distance(double x1, double y1, double x2, double y2) {

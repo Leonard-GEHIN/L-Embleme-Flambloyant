@@ -12,7 +12,7 @@ public class Hache extends Personnage{
 		/*
 		 * Variable a modifier sur chaque classe
 		 */
-		int pointsTotal = Methode.nombreAlea(55, 60);
+		int pointsTotal = Methode.nombreAlea(50, 55);
 		
 		int pointsRestant = pointsTotal;
 		
@@ -36,7 +36,7 @@ public class Hache extends Personnage{
 		//Variables static
 		classe = "Hache";
 		ratioPointsDeVie = 0.55;
-		ratioAttaque = 0.30;
+		ratioAttaque = 0.35;
 		ratioDefence = 1 - ratioAttaque - ratioPointsDeVie;
 		
 		String[] tabTempNom = {"Barte", "Arthur", "Hector", "Gunter"};
@@ -91,7 +91,7 @@ public class Hache extends Personnage{
 	@Override
 	public double getDefense(Personnage cible) {
 		// TODO Auto-generated method stub
-		return this.defense+5;
+		return this.defense+2;
 	}
 	
 	@Override

@@ -196,7 +196,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				echangerTour();
 				if(tourEnnemi) {
 					ennemi.tourEnnemi();
-					System.out.println("Calcul de l'IA");
 				}
 			}
 		}

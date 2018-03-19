@@ -282,6 +282,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 
 	public boolean peutAttaquer(Personnage cible) {
+	//Renvoie true si un personnage est assez proche pour attaquer la cible
 		boolean attaquePossible = false;
 		if(this.distance(cible) <= 1)
 			attaquePossible = true;
