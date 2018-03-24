@@ -1,9 +1,11 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
@@ -27,13 +29,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	protected boolean animationCombat = false, estEnMouvement = false, attendDeselectionOuAttaque = false,
 						victoire = false;
 
-	//Variables de classe chargees dans la methode static chargerClasse()
-	//Variables servant a calculer les statistiques des personnages
-	protected static double ratioAttaque;
-	protected static double ratioDefence;
-	protected static double ratioPointsDeVie;
-
-	protected static ImageIcon image; //Contient l'image a afficher
+	//protected static ImageIcon image; //Contient l'image a afficher
 
 	
 	//Constructeur utiliser dans les enfants
@@ -60,20 +56,43 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		}
 		this.ID = nombrePersonnage;
 		nombrePersonnage++;
+		
+		
+		//Generation des stat du personnage
+		int pointsTotal = Methode.nombreAlea(50, 55);
+		int pointsRestant = pointsTotal;
+
+		int nombreStatRestanteACalcule = 3;
+		this.attaque = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, getRatioAttaque());
+		pointsRestant -= this.attaque;
+		nombreStatRestanteACalcule--;
+		this.defense = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, getRatioDefence());
+		pointsRestant -= this.defense;
+		nombreStatRestanteACalcule--;
+		this.pointsDeVie = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, getRatioPointsDeVie());
+		pointsRestant -= this.pointsDeVie;
+		nombreStatRestanteACalcule--;
 	}
-	
 
 	
 /*
  * Methodes abstraite
  */
-	
+
+	//Tous les mutateur et accesseur servent a manipuler les attribut des classes filles non presente dans Personnage
+	protected abstract ImageIcon getImageVictoire();
+	protected abstract ImageIcon[] getImageDebout();
+	protected abstract ImageIcon[][] getImageMouvement();protected abstract void setImageVictoire(ImageIcon image);
+	protected abstract void setImageDebout(ImageIcon[] image);
+	protected abstract void setImageMouvement(ImageIcon[][] image);
 	public abstract double getAttaque(Personnage cible);
 	public abstract double getDefense(Personnage cible);
 	public abstract String getClasse();
 	public abstract String[] getTabGenerationNom();
-	public abstract ImageIcon getImage();
-	public abstract void update();
+
+	protected abstract double getRatioAttaque();
+	protected abstract double getRatioPointsDeVie();
+	protected abstract double getRatioDefence();
 	
 /*
  * Methode de generation
@@ -179,9 +198,67 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
  * Methodes utile a d'autre clase et / ou d'autre methodes
  */
 	
+	
+	public ImageIcon getImage() {
+	//Calcul de l'image
+		ImageIcon image = null;
+		if(estEnMouvement)
+			image = getImageMouvement()[this.directionMouvement][this.compteurSkin];
+		else if(attendDeselectionOuAttaque || victoire)
+			image = getImageVictoire();
+		else
+			image = getImageDebout()[this.compteurSkin];
+		return image;
+	}
+	
+	
+	public void update() {
+		if(estEnMouvement)
+			compteurSkin = ( compteurSkin + 1 ) % getImageMouvement()[0].length;
+		else
+			compteurSkin = ( compteurSkin + 1 ) % getImageDebout().length;
+	}
+	
+	
+	public static void chargerClasse(String classe) {
+	//Charge les images des personnages
+		//perso sert a acceder aux image de la classe voulu
+		Personnage perso = null;
+		switch(classe.charAt(0)) {
+		case 'E':
+			perso = new Epee(false);
+			break;
+		case 'L':
+			perso = new Lance(false);
+			break;
+		case 'H':
+			perso = new Hache(false);
+			break;
+		}
+		
+		perso.setImageVictoire(new ImageIcon("Sprite/" + classe + "/victoire.png"));
+		
+		//Image debout
+		ImageIcon[] imageDebout = new ImageIcon[3];
+		for (int i = 0; i < imageDebout.length; i++) {
+			imageDebout[i] = new ImageIcon("Sprite/" + classe + "/debout "+ i + ".png");
+		}
+		perso.setImageDebout(imageDebout);
+		
+		//Image de mouvement
+		ImageIcon[][] imageMouvement = new ImageIcon[4][4];
+		String[] ordreImage = {"droite", "haut", "gauche", "bas"};
+		for (int j = 0; j < imageMouvement.length; j++) {
+			for (int i = 0; i < imageMouvement[j].length; i++) {
+				imageMouvement[j][i] = new ImageIcon("Sprite/" + classe + "/" + ordreImage[j] + " "+ i + ".png");
+			}	
+		}
+		
+		perso.setImageMouvement(imageMouvement);
+	}
+	
 	public void victoire() {
 		this.victoire = true;
-		System.out.println("salut");
 	}
 	
 	public void terminerTour() {
@@ -320,13 +397,12 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		if(!this.estMort) {
 			double sc = Application.SCALE; //Variable pour reduire la methode d'affichage plus bas dans la methode
 			ImageIcon image = this.getImage();
-			
-	
+
 			//Changement de la police
 			int taillePoliceY = (int)(Application.SCALE*4);
 			Font font = new Font("Monospaced", Font.PLAIN, taillePoliceY);
 			g2d.setColor(Color.WHITE);
-			g2d.setFont(font);
+			g2d.setFont(font);	
 			
 			//Affiche les images et le numero du personnage
 			//les variables offsetMouvement sert a animer les personnages

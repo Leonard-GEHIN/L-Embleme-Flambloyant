@@ -33,7 +33,6 @@ public class IntelligenceArtificiel {
 		for (int i = 0; i < peutAttaquerIndiceJoueur.length; i++) {
 			if(peutAttaquerIndiceJoueur[i]) {
 				peutAttaquer = true;
-				System.out.println("Peut attaquer joueur "+ i);
 			}
 		}
 		
@@ -104,7 +103,6 @@ public class IntelligenceArtificiel {
 			int yRecherche;
 			if(peutAttaquer) {
 				//Attaque
-					System.out.println("essaye d'attaquer joueur : " + meilleurindiceAttaque);
 					cible = joueur.getPersonnages(meilleurindiceAttaque);
 					xRecherche = cible.getCaseX();
 					yRecherche = cible.getCaseY();
@@ -115,15 +113,12 @@ public class IntelligenceArtificiel {
 					while (i < caseJouable.size() && !caseAdversaireTrouve) {
 						xTest = caseJouable.get(i)[0];
 						yTest = caseJouable.get(i)[1];
-						System.out.println("Cherche case pour attaquer");
 						//if(Math.pow(yRecherche - yTest, 2) + Math.pow(xRecherche - xTest, 2) <= 1) {
 						if(Methode.distance(xRecherche, yRecherche, xTest, yTest) <= 1) {
 						// La case est a cote de la cible, on peut donc attaquer la cible
 							caseAdversaireTrouve = true;
-							System.out.println("Case pour se deplacer trouve");
 							if( !(xTest == perso.getCaseX() && yTest == perso.getCaseY()) ) {
 							//Si le personnage a besoin de se deplacer
-								System.out.println("Se deplace");
 								perso.deplacer(xTest, yTest);
 								personnageEnnemiPeutAttaquer = true;
 								personnageJoueurCible = meilleurindiceAttaque;
@@ -187,7 +182,6 @@ public class IntelligenceArtificiel {
 			int indicePersonnageEnnemi = joueur.selectionIndicePersonnage(x, y);
 			if(indicePersonnageEnnemi > -1) {
 			//Un ennemi est trouve
-				System.out.println("Perso joueur trouve : " + indicePersonnageEnnemi);
 				peutAttaquerIndiceJoueur[indicePersonnageEnnemi] = true;
 			}
 			else {

@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JPanel;
@@ -35,7 +36,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static Carte carte;
 	protected static Joueur joueur;
 	protected static Ennemi ennemi = new Ennemi();
-	private static boolean attendDeselectionOuAttaque = false;
+	private static boolean attendDeselectionOuAttaque = false, partieGagner, partieFinie = false;
 	public static boolean personnageSelectionner = false,animationEnCours = false, tourEnnemi = false;
 	private boolean enJeu = false;
 	public static int indicePersonnageSelectionner = -1;
@@ -56,7 +57,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		this.addMouseListener(this);
 		
 		setFocusable(true); //Permet de pouvoir mettre la fenêtre en premier-plan 
-		setBackground(Color.WHITE);
+		setBackground(new Color(210, 180, 140));
 		timer = new Timer(DELAY_IMAGE,this); 
 		timer.start(); //Le timer démarre ici
 
@@ -64,9 +65,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		chargerClasse();
 		carte = new Carte();
 		creationJoueur();
-		creationEnnemi();
+		creationEnnemi(3);
 		Carte.enleverCaseApparition();
-		Carte.afficherCarteTerminal();
 		Case.genererCarte(joueur, ennemi, -1);
 	}
 	
@@ -119,11 +119,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
     	}
     	sc.close();
     }
-
 	
-	private static void creationEnnemi() {
+	private static void creationEnnemi(int nbPersonnage) {
 		Personnage persoTemp = null;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < nbPersonnage; i++) {
 			switch(Methode.nombreAlea(1, 3)) {
 			case 1:
 				persoTemp = new Epee(false);
@@ -171,6 +170,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			joueur.getPersonnages(indicePersonnageSelectionner).dessiner(this, g2d);
 		}
 		
+		if(partieFinie) {
+			dessinerFinPartie(this, g2d);
+		}
+		
 		this.enJeu = true;
 	}
 	
@@ -184,6 +187,62 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		offsetXEnCase = joueur.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
 		offsetXEnCase += 5;
 		offsetXEnCase = ennemi.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
+	}
+	
+	private static void dessinerFinPartie(Board board, Graphics2D g2d) {
+		int tailleAffichage = 20, caractereRecuperer = 0, longueurMax = 0;
+		int x, y, longueur, largeur,  epaisseurBord, posX, posY;
+		double espace;
+		String messageFinPartie = "", temp = "";
+		ArrayList<String> messageCoupe = new ArrayList<String>();
+		if(partieGagner) {
+			messageCoupe.add("Bravo " + joueur.getNom() + ", vous avez");
+			messageCoupe.add("vaincu l'equipe ennemie et");
+			messageCoupe.add("recuperer l'embleme flamboyant !");
+		}
+		else {
+			messageCoupe.add("L'equipe ennemie s'empare");
+			messageCoupe.add("de l'embleme flamboyant !");
+			messageCoupe.add("Vous ferrez mieux la");
+			messageCoupe.add("prochaine fois.");
+		}
+		
+		//Dessine le carre aui sert de fond
+		for (String message : messageCoupe) {			
+			if(message.length() > longueurMax) {
+				longueurMax = message.length();
+			}
+		}
+		
+		posX = 20;
+		posY = 5;
+		epaisseurBord = 5;
+		espace = 0.5;
+		x = (int) (Board.tailleCaractereX * (posX-espace));
+		y = (int) (Board.tailleCaractereY * posY);
+		longueur = (int) (Board.tailleCaractereX * (longueurMax + 3 + 2 * espace));
+		largeur = (int) (Board.tailleCaractereY * (messageCoupe.size() + 0.4));
+
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(x-epaisseurBord, y-epaisseurBord, longueur+2*epaisseurBord, largeur+2*epaisseurBord);
+		g2d.setColor(Color.WHITE);
+		g2d.fillRect(x, y, longueur, largeur);
+
+		
+		//Affichage du texte
+		g2d.setColor(Color.BLACK);
+		g2d.setFont(new Font("Monospaced", Font.PLAIN, tailleCaractereY));
+		
+		int i = 0;
+		for (String message : messageCoupe) {
+			g2d.drawString(message, Board.tailleCaractereX * posX, Board.tailleCaractereY * ( i + posY +1 ) );
+			i++;
+		}
+		
+
+		
+		/*			g2d.drawString(informationListe[i], (int)(offsetXEnCase*Board.tailleCaractereX),
+												offsetYEnPixel+Board.tailleCaractereY*i);*/
 	}
 
 
@@ -199,28 +258,43 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				}
 			}
 		}
+		/*else if(finPartie()) {
+			if(partieGagner) {
+			//Le joueur a gagner
+				
+			}
+			else if(partiePerdu) {
+			//L'ennemi a gagne
+				
+			}
+		}
+		
+		*/
+
 		repaint(); //Affiche l'image
 	}
+	
 
 	private boolean finPartie() {
 		boolean partieFinie = false;
 		if(!animationEnCours) {
 			if(joueur.getPersonnages().size() == 0) {
-				System.out.println("L'ennemi a triomphe");
 				ennemi.victoire();
 				partieFinie = true;
+				partieGagner = false;
 			}
 			if(ennemi.getPersonnages().size() == 0) {
-				System.out.println("Bravo, vous avez vaincu !");
 				joueur.victoire();
 				partieFinie = true;
+				partieGagner = true;
 			}
 			
 			if(partieFinie) {
+				Board.partieFinie = true;
 				Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
-				timer.stop();
 				repaint();
-				System.out.println("La partie est maintenant termine");
+				//System.out.println("La partie est maintenant termine");
+				//timer.stop();
 			}
 		}
 		return partieFinie;
@@ -229,6 +303,11 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private class TAdapter extends KeyAdapter{ // Méthode qui s'active quand l'état d'une touche change
 		@Override
 		public void keyReleased(KeyEvent e){ //Action quand une touche est relachee
+			if(e.getKeyCode()==KeyEvent.VK_SPACE) { // Si le joueur tape sur la barre espace
+				if(!tourEnnemi) {
+					joueur.passerTour();
+				}
+			}
 		}
 		@Override
 		public void keyPressed(KeyEvent e){ //Action quand une touche est pressee
@@ -338,13 +417,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		if(!animationEnCours && !attendDeselectionOuAttaque) {
 		//Echange les tour des intelligences
 			if(joueur.ATerminerSonTour() && !tourEnnemi) {
-				System.out.println("C'est maintenant le tour des ennemis");
 				tourEnnemi = true;
 				ennemi.debutTour();
+				Case.genererCarte(joueur, ennemi, -1);
 			}
 			else if(ennemi.ATerminerSonTour() && tourEnnemi) {
 				tourEnnemi = false;
 				joueur.debutTour();
+				Case.genererCarte(joueur, ennemi, -1);
 			}
 		}
 	}

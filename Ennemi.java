@@ -11,6 +11,7 @@ public class Ennemi extends Intelligence{
 	}
 	
 	public void tourEnnemi() {
+		System.out.println(personnages.size());
 		for (Personnage perso : personnages) {
 			if(!perso.isTourTerminer() && !Board.animationEnCours) {
 			//L'ennemi ne joue que si son tour n'est pas terminer et qu'aucun autre personnage ne se deplace / attaque

@@ -1,10 +1,8 @@
 import java.awt.EventQueue;
-import java.util.Scanner;
-
 import javax.swing.JFrame;
 @SuppressWarnings("serial")
 public class Application extends JFrame {
-	public static final double SCALE = 2.5;
+	public static final double SCALE = 3;//Valeur a changer pour augmenter la taille de la fenetre (max pour 700px de hauteur = 3.5)
     public static int hauteur = (int) ((171)*SCALE)+(Board.tailleCaractereY*5+5), largeur = (int) (240*SCALE);
     public static Board board = new Board();
     public static String titreFenetre = "L'Embleme Flamboyant";

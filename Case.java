@@ -22,27 +22,31 @@ public class Case extends ObjetAffichable {
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
 		double sc = Application.SCALE;
-		ImageIcon image = null;
-
-		Color couleur = new Color(Color.TRANSLUCENT); //Sert a mettre de la transparence pour l'image
+		int transparence = 100;
+		
 		for (int i = 0; i < carteCase.length; i++) {
 			for (int j = 0; j < carteCase[i].length; j++) {
 				if(carteCase[i][j] != 0) {
 					switch(carteCase[i][j]) {
-					case 1:
-						image = imageCaseMouvement;
+					case 1: //Case de mouvement
+						g2d.setColor(new Color(0, 255, 0, transparence));
 						break;
-					case 2:
-						image = imageCaseAllie;
+					case 2: //Personnage allie
+						g2d.setColor(new Color(0, 0, 255, transparence));
 						break;
-					case 3:
-						image = imageCaseEnnemi;
+					case 3: //Personnage ennemi
+						g2d.setColor(new Color(255, 0, 0, transparence));
+						break;
+					case 4: //Personnage qui a finis son tour
+						g2d.setColor(new Color(0, 0, 0, transparence+25));
+						break;
+					case 5: //Personnage selectionner par le joueur
+						g2d.setColor(new Color(0, 100, 255, transparence));
 						break;
 					}
-					g2d.drawImage(image.getImage(),
-							(int)(sc*(16*j)), (int)(sc*(16*i)),
-							(int)(sc*15), (int)(sc*15),
-							couleur, board);
+					
+					g2d.fillRect((int)(sc*(16*j)), (int)(sc*(16*i)),
+							(int)(sc*15), (int)(sc*15));
 				}
 			}
 		}
@@ -68,22 +72,32 @@ public class Case extends ObjetAffichable {
 			joueur.getPersonnages(indicePersonnageSelectionner).caseJouable(ennemi);
 
 		if(!caseJouable.isEmpty()) {
+		//Case ou le joueur peut deplacer son personnage
 			for (int[] caseJouables : caseJouable) {
 				carteCase[caseJouables[1]][caseJouables[0]] = 1;
 			}
 		}
 
 		for (Personnage persoJoueur : joueur.getPersonnages()) {
-			carteCase[persoJoueur.getCaseY()][persoJoueur.getCaseX()] = 2;
+			if(persoJoueur.isTourTerminer()) {
+			//Case d'un personnage qui a fini son tour
+				carteCase[persoJoueur.getCaseY()][persoJoueur.getCaseX()] = 4;
+			}
+			else {
+			//Case perso joueur
+				carteCase[persoJoueur.getCaseY()][persoJoueur.getCaseX()] = 2;
+			}
 		}
 		
 		for (Personnage persoEnnemi : ennemi.getPersonnages()) {
+		//Case des ennemis
 			carteCase[persoEnnemi.getCaseY()][persoEnnemi.getCaseX()] = 3;
 		}
 		
 		if(Board.personnageSelectionner && Board.indicePersonnageSelectionner > -1) {
+		//Personnage selectionner par le joueur
 			carteCase[joueur.getPersonnages(Board.indicePersonnageSelectionner).getCaseY()]
-					 [joueur.getPersonnages(Board.indicePersonnageSelectionner).getCaseX()] = 1;
+					 [joueur.getPersonnages(Board.indicePersonnageSelectionner).getCaseX()] = 5;
 		}
 	}
 

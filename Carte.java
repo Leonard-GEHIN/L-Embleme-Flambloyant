@@ -29,7 +29,8 @@ public class Carte extends ObjetAffichable {
 		g2d.drawImage(imageCarte.getImage(), 0, 0,
 				getLargeurEnPixel(), getHauteurEnPixel(), board);
 		g2d.drawImage(imageTriangle.getImage(),
-				(int) (getLargeurEnPixel()-imageTriangle.getIconWidth()*sc), getHauteurEnPixel(),
+				(int) (getLargeurEnPixel() * 0.99 - imageTriangle.getIconWidth() * sc),
+				getHauteurEnPixel(),
 				(int) (imageTriangle.getIconWidth()*sc),
 				(int) (imageTriangle.getIconHeight()*sc), board);
 	}

@@ -7,31 +7,17 @@ public class Lance extends Personnage{
 	protected static ImageIcon[] imageDebout = new ImageIcon[3];
 	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][4];
 
+	//Variables servant a calculer les statistiques des personnages
+	protected static double ratioAttaque;
+	protected static double ratioDefence;
+	protected static double ratioPointsDeVie;
+
 	public Lance (boolean personnageJoueur) {
 		super(personnageJoueur);
-		/*
-		 * Variable a modifier sur chaque classe
-		 */
-		int pointsTotal = Methode.nombreAlea(50, 55);
-		
-		int pointsRestant = pointsTotal;
-		
-		//Generation des stat du personnage
-		int nombreStatRestanteACalcule = 3;
-		this.attaque = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioAttaque);
-		pointsRestant -= this.attaque;
-		nombreStatRestanteACalcule--;
-		this.defense = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioDefence);
-		pointsRestant -= this.defense;
-		nombreStatRestanteACalcule--;
-		this.pointsDeVie = generationStat(pointsTotal, pointsRestant, nombreStatRestanteACalcule, ratioPointsDeVie);
-		pointsRestant -= this.pointsDeVie;
-		nombreStatRestanteACalcule--;
 		this.nom = this.genererNom();
-		
-		System.out.println("Epee genere : "+this.nom);
 	}
 
+	
 	public static void chargerClasse() {
 		//Variables static
 		classe = "Lance";
@@ -42,55 +28,18 @@ public class Lance extends Personnage{
 		String[] tabTempNom = {"Effie", "Fjorm", "Abel", "Jagen"};
 		tabGenerationNom = tabTempNom;
 		
-		imageVictoire = new ImageIcon("Sprite/" + classe + "/victoire.png");
-		
-		//Image debout
-		for (int i = 0; i < imageDebout.length; i++) {
-			imageDebout[i] = new ImageIcon("Sprite/" + classe + "/debout "+ i + ".png");
-		}
-		
-		//Image de mouvement
-		String[] ordreImage = {"droite", "haut", "gauche", "bas"};
-		for (int j = 0; j < imageMouvement.length; j++) {
-			for (int i = 0; i < imageMouvement[j].length; i++) {
-				imageMouvement[j][i] = new ImageIcon("Sprite/" + classe + "/" + ordreImage[j] + " "+ i + ".png");
-			}	
-		}
-	}
-	
-	
-	@Override
-	public ImageIcon getImage() {
-	//Calcul de l'image
-		ImageIcon image = null;
-		if(estEnMouvement)
-			image = imageMouvement[this.directionMouvement][this.compteurSkin];
-		else if(attendDeselectionOuAttaque || victoire)
-			image = imageVictoire;
-		else
-			image = imageDebout[this.compteurSkin];
-		return image;
-	}
-	
-	@Override
-	public void update() {
-		if(estEnMouvement)
-			compteurSkin = ( compteurSkin + 1 ) % imageMouvement[0].length;
-		else
-			compteurSkin = ( compteurSkin + 1 ) % imageDebout.length;
+		Personnage.chargerClasse(classe);
 	}
 
 	
 	@Override
 	public double getAttaque(Personnage cible) {
-		// TODO Auto-generated method stub
 		return this.attaque+5;
 	}
 	
 
 	@Override
 	public double getDefense(Personnage cible) {
-		// TODO Auto-generated method stub
 		return this.defense;
 	}
 	
@@ -102,5 +51,50 @@ public class Lance extends Personnage{
 	@Override
 	public String[] getTabGenerationNom() {
 		return tabGenerationNom;
+	}
+
+	@Override
+	protected void setImageVictoire(ImageIcon image) {
+		imageVictoire = image;
+	}
+
+	@Override
+	protected void setImageDebout(ImageIcon[] image) {
+		imageDebout = image;
+	}
+
+	@Override
+	protected void setImageMouvement(ImageIcon[][] image) {
+		imageMouvement = image;
+	}
+
+	@Override
+	protected ImageIcon getImageVictoire() {
+		return imageVictoire;
+	}
+
+	@Override
+	protected ImageIcon[] getImageDebout() {
+		return imageDebout;
+	}
+
+	@Override
+	protected ImageIcon[][] getImageMouvement() {
+		return imageMouvement;
+	}
+
+	@Override
+	protected double getRatioAttaque() {
+		return ratioAttaque;
+	}
+
+	@Override
+	protected double getRatioPointsDeVie() {
+		return ratioPointsDeVie;
+	}
+
+	@Override
+	protected double getRatioDefence() {
+		return ratioDefence;
 	}
 }

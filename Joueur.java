@@ -9,5 +9,11 @@ public class Joueur extends Intelligence{
 	
 	public String getNom() {
 		return nom;
+	}
+
+	public void passerTour() {
+		for (Personnage personnage : personnages) {
+			personnage.terminerTour();
+		}
 	}	
 }
