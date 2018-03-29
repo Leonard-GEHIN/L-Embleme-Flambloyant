@@ -77,7 +77,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
     	String nom = sc.nextLine();
     	Board.joueur = new Joueur(nom);
 
-    	System.out.println("Voulez-vous une equipe equilibre preparee ou composez votre propre equipe ? (y/n)");
+    	System.out.println("Voulez-vous une equipe equilibre preparee ? (y/n)"
+    			+ "\n(Un guerrier de chaque classe)");
     	char choix = sc.nextLine().charAt(0);
     	if(choix == 'y') {
     		Board.joueur.ajouterPersonnage(new Hache(true));
@@ -122,6 +123,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	private static void creationEnnemi(int nbPersonnage) {
 		Personnage persoTemp = null;
+		int tempInt;
 		for (int i = 0; i < nbPersonnage; i++) {
 			switch(Methode.nombreAlea(1, 3)) {
 			case 1:
@@ -155,6 +157,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			this.nombreImageParSeconde = 0;
 		}
 	}
+	
 
 	//méthode appelée pour mettre à jour l'affichage
 	private void doDrawing(Graphics g){ 
@@ -316,7 +319,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 
 	//Methode qui charge les attribut static
 	private static void chargerClasse() {
-		Case.chargerClasse();
 		Epee.chargerClasse();
 		Lance.chargerClasse();
 		Hache.chargerClasse();

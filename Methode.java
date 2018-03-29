@@ -1,6 +1,6 @@
 public class Methode {
 	public static int nombreAlea(double min, double max) {
-		int retour = (int)(Math.random()*(max-min) + min);
+		int retour = (int)(Math.random()*(max-min+1) + min);
 		return retour;
 	}
 	

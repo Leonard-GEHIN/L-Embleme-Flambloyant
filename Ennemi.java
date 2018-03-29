@@ -1,4 +1,6 @@
 public class Ennemi extends Intelligence{
+	private static boolean calculIAEnCours = false;
+	
 	public Ennemi() {
 		super();
 	}
@@ -11,12 +13,18 @@ public class Ennemi extends Intelligence{
 	}
 	
 	public void tourEnnemi() {
-		System.out.println(personnages.size());
-		for (Personnage perso : personnages) {
-			if(!perso.isTourTerminer() && !Board.animationEnCours) {
-			//L'ennemi ne joue que si son tour n'est pas terminer et qu'aucun autre personnage ne se deplace / attaque
-				IntelligenceArtificiel.activerIntelligenceArtificiel(perso, Board.joueur, this);
+		try {
+			for (Personnage perso : personnages) {
+					if(!perso.isTourTerminer() && !Board.animationEnCours) {
+					//L'ennemi ne joue que si son tour n'est pas terminer et qu'aucun autre personnage ne se deplace / attaque
+						IntelligenceArtificiel.activerIntelligenceArtificiel(perso, Board.joueur, this);
+					}
 			}
+			calculIAEnCours = false;
+	
+		}
+		catch(Exception e) {
+			
 		}
 	}
 }

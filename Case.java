@@ -12,9 +12,6 @@ public class Case extends ObjetAffichable {
 	 */
 	
 	protected static int[][] carteCase = new int[10][15];
-	protected static ImageIcon imageCaseMouvement;
-	protected static ImageIcon imageCaseAllie;
-	protected static ImageIcon imageCaseEnnemi;
 	
 	//Sert a stocker les case ou le personnage peut aller
 	protected static ArrayList<int[]> caseJouable = new ArrayList<int[]>();
@@ -109,12 +106,6 @@ public class Case extends ObjetAffichable {
 			}
 			System.out.println();
 		}
-	}
-
-	public static void chargerClasse() {
-		imageCaseAllie = new ImageIcon("Sprite/Carte/Case Allie.png");
-		imageCaseEnnemi = new ImageIcon("Sprite/Carte/Case Ennemi.png");
-		imageCaseMouvement = new ImageIcon("Sprite/Carte/Case Mouvement.png");
 	}
 
 

@@ -17,11 +17,13 @@ public class Carte extends ObjetAffichable {
 	private static ImageIcon imageCarte;
 	private static ImageIcon imageTriangle;
 
+	
 	public Carte() {
 		super();
 		chargerCarte(0);
 	}
 
+	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
 		double sc = Application.SCALE*0.58;
@@ -30,15 +32,16 @@ public class Carte extends ObjetAffichable {
 				getLargeurEnPixel(), getHauteurEnPixel(), board);
 		g2d.drawImage(imageTriangle.getImage(),
 				(int) (getLargeurEnPixel() * 0.99 - imageTriangle.getIconWidth() * sc),
-				getHauteurEnPixel(),
+				(int) (board.getHeight() * 0.99   - imageTriangle.getIconHeight()*sc),
 				(int) (imageTriangle.getIconWidth()*sc),
 				(int) (imageTriangle.getIconHeight()*sc), board);
 	}
 
+	
 	public static void chargerCarte(int nouveauNumeroCarte) {
 		numeroCarte = nouveauNumeroCarte;
 
-		imageCarte = new ImageIcon("Sprite/Carte/Carte" + numeroCarte + ".png");
+		imageCarte = new ImageIcon("Sprite/Carte/Carte0.png");
 		imageTriangle = new ImageIcon("Sprite/Faiblesse.png");
 
 		switch (numeroCarte) {
@@ -59,6 +62,7 @@ public class Carte extends ObjetAffichable {
 			break;
 		}
 	}
+	
 
 	public static void afficherCarteTerminal() {
 		for (int j = 0; j < carte.length; j++) {
@@ -96,12 +100,14 @@ public class Carte extends ObjetAffichable {
 		personnageADeplacer.deplacer(x, y);
 	}
 	
+	
 	/**
 	 * @return the imageCarte
 	 */
 	public ImageIcon getImageCarte() {
 		return imageCarte;
 	}
+	
 
 	/**
 	 * @return un clone de la carte afin que les modification externe ne modifie pas la vrai carte

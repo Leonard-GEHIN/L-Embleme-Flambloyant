@@ -1,7 +1,6 @@
 import javax.swing.ImageIcon;
 
 public class Epee extends Personnage{
-
 	protected static String[] tabGenerationNom = new String[4];
 	protected static String classe;
 	protected static ImageIcon imageVictoire;

@@ -22,7 +22,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 	
 	//Utilise pour mouvement et animation
 	protected double distanceAPourcourir = 0, multiplicateurVitesse = 1, tempsAnimation = 0;
-	protected int directionMouvement = 0, compteurSkin = Methode.nombreAlea(0, 3);
+	protected int directionMouvement = 0, compteurSkin = Methode.nombreAlea(0, 2);
 	protected int caseX, caseY, offsetMouvementX = 0, offsetMouvementY = 0, tickAnimationUtilise = 0, etapeAnimationCombat = 0;
 	protected int nouvelleCaseX = -1, nouvelleCaseY = -1; //Stock les prochaine valeur du personnage durant l'animation
 	protected double vitesseX, vitesseY; // en px/ms
@@ -208,15 +208,16 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			image = getImageVictoire();
 		else
 			image = getImageDebout()[this.compteurSkin];
+		
 		return image;
 	}
 	
 	
 	public void update() {
 		if(estEnMouvement)
-			compteurSkin = ( compteurSkin + 1 ) % getImageMouvement()[0].length;
+			compteurSkin = ( compteurSkin + 1 ) % this.getImageMouvement()[0].length;
 		else
-			compteurSkin = ( compteurSkin + 1 ) % getImageDebout().length;
+			compteurSkin = ( compteurSkin + 1 ) % this.getImageDebout().length;
 	}
 	
 	
@@ -407,12 +408,23 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			//Affiche les images et le numero du personnage
 			//les variables offsetMouvement sert a animer les personnages
 			g2d.drawImage(image.getImage(),
-					(int)(sc*(16*caseX)-16+offsetMouvementX), (int)(sc*(16*caseY)-16+offsetMouvementY)+1,
+					(int)(sc*(16*caseX)+offsetMouvementX-25), (int)(sc*(16*caseY)+offsetMouvementY - image.getIconHeight()-17),
 					(int)(sc*image.getIconWidth()), (int)(sc*image.getIconWidth()),
 					board);
 			g2d.drawString(""+this.ID,
 					(int)( sc*( 16*( caseX+1 ) )-taillePoliceY ),
 					(int)( sc*( 16*( caseY ) ) + taillePoliceY ) );
+
+			//Affiche les points de vie
+			g2d.setColor(new Color(255, 255, 255, 160));
+			g2d.fillRect((int)( sc*( 16*( caseX +1)) - taillePoliceY*1.5),
+					(int)( sc*( 16*( caseY + 1)) - taillePoliceY*1.1),
+					(int)(taillePoliceY*1.3),
+					(int)(taillePoliceY*0.95) );
+			g2d.setColor(new Color(150, 0, 150));
+			g2d.drawString(""+(int)(this.pointsDeVie),
+					(int)( sc*( 16*( caseX+1 ) )- taillePoliceY*1.5 ),
+					(int)( sc*( 16*( caseY+1) ) - taillePoliceY*0.3 ) );
 		}
 	}
 
