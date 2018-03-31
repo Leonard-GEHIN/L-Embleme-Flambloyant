@@ -2,8 +2,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
-
 public class Case extends ObjetAffichable {
 	/*
 	 * 1 = Case de mouvement

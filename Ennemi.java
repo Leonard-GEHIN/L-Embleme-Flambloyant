@@ -1,6 +1,4 @@
 public class Ennemi extends Intelligence{
-	private static boolean calculIAEnCours = false;
-	
 	public Ennemi() {
 		super();
 	}
@@ -20,11 +18,10 @@ public class Ennemi extends Intelligence{
 						IntelligenceArtificiel.activerIntelligenceArtificiel(perso, Board.joueur, this);
 					}
 			}
-			calculIAEnCours = false;
-	
 		}
 		catch(Exception e) {
-			
+			//Une erreur d'acces aux objet est cause par la boucle for ci dessus.
+			//Lorsqu'un Personnage est manipuler par la classe IntelligenceArtificiel, il arrive que l'algorithme ressaye d'appeler la fonction alors que celle ci n'a pas fini son traitement.
 		}
 	}
 }

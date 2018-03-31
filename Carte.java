@@ -41,8 +41,8 @@ public class Carte extends ObjetAffichable {
 	public static void chargerCarte(int nouveauNumeroCarte) {
 		numeroCarte = nouveauNumeroCarte;
 
-		imageCarte = new ImageIcon("Sprite/Carte/Carte0.png");
-		imageTriangle = new ImageIcon("Sprite/Faiblesse.png");
+		imageCarte = new ImageIcon(Board.racine + "Carte/Carte0.png");
+		imageTriangle = new ImageIcon(Board.racine + "Carte/Faiblesse.png");
 
 		switch (numeroCarte) {
 		case 1:

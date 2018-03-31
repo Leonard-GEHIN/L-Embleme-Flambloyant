@@ -31,7 +31,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	//Attribut relative a l'affichage
 	public static int tailleCaractereY = (int)(6*Application.SCALE);
 	public static int tailleCaractereX = (int)(tailleCaractereY*0.6);
-	
+	public static final String racine = "Sprite/";
+
 	//Attribut relative au element de jeu
 	private static Carte carte;
 	protected static Joueur joueur;
@@ -40,12 +41,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public static boolean personnageSelectionner = false,animationEnCours = false, tourEnnemi = false;
 	private boolean enJeu = false;
 	public static int indicePersonnageSelectionner = -1;
-	
+
 	//Attribut relative au temps
 	private Timer timer; // Sert à actualiser les positions des joueurs et ennemis
-	private final static int IMAGE_PAR_SECONDE_VOULU = 20; // Nombre d'image par seconde souhaite (60 = bonne qualite)
+	private final static int IMAGE_PAR_SECONDE_VOULU = 60; // Nombre d'image par seconde souhaite (60 = bonne qualite)
 	private final static int DELAY_IMAGE = 1000 / IMAGE_PAR_SECONDE_VOULU; // Temps entre deux d'image (en ms)
-	private final static int DELAY_UPDATE = 350; // Temps entre deux actualisation (en ms)
+	private final static int DELAY_UPDATE = 300; // Temps entre deux actualisation (en ms)
 	private double tempsTemp = System.currentTimeMillis();
 	private int nombreImageParSeconde = 0;
 	private static int imagePasseSansUpdate = 0;
@@ -123,7 +124,6 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	private static void creationEnnemi(int nbPersonnage) {
 		Personnage persoTemp = null;
-		int tempInt;
 		for (int i = 0; i < nbPersonnage; i++) {
 			switch(Methode.nombreAlea(1, 3)) {
 			case 1:
@@ -193,10 +193,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	}
 	
 	private static void dessinerFinPartie(Board board, Graphics2D g2d) {
-		int tailleAffichage = 20, caractereRecuperer = 0, longueurMax = 0;
+		int longueurMax = 0;
 		int x, y, longueur, largeur,  epaisseurBord, posX, posY;
 		double espace;
-		String messageFinPartie = "", temp = "";
 		ArrayList<String> messageCoupe = new ArrayList<String>();
 		if(partieGagner) {
 			messageCoupe.add("Bravo " + joueur.getNom() + ", vous avez");

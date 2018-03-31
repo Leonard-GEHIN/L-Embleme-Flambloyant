@@ -19,6 +19,7 @@ public class Application extends JFrame {
 	}
 
 	public static void main(String[] args) {
+		
 		EventQueue.invokeLater(new Runnable() { //cree un thread pour executer l'application
 			@Override
 			public void run() { //demarre le jeu

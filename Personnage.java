@@ -1,11 +1,9 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
 import javax.swing.Timer;
 
@@ -237,12 +235,12 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 			break;
 		}
 		
-		perso.setImageVictoire(new ImageIcon("Sprite/" + classe + "/victoire.png"));
+		perso.setImageVictoire(new ImageIcon(Board.racine + classe + "/victoire.png"));
 		
 		//Image debout
 		ImageIcon[] imageDebout = new ImageIcon[3];
 		for (int i = 0; i < imageDebout.length; i++) {
-			imageDebout[i] = new ImageIcon("Sprite/" + classe + "/debout "+ i + ".png");
+			imageDebout[i] = new ImageIcon(Board.racine + classe + "/debout "+ i + ".png");
 		}
 		perso.setImageDebout(imageDebout);
 		
@@ -251,7 +249,7 @@ public abstract class Personnage extends ObjetAffichable implements ActionListen
 		String[] ordreImage = {"droite", "haut", "gauche", "bas"};
 		for (int j = 0; j < imageMouvement.length; j++) {
 			for (int i = 0; i < imageMouvement[j].length; i++) {
-				imageMouvement[j][i] = new ImageIcon("Sprite/" + classe + "/" + ordreImage[j] + " "+ i + ".png");
+				imageMouvement[j][i] = new ImageIcon(Board.racine + classe + "/" + ordreImage[j] + " "+ i + ".png");
 			}	
 		}
 		
