@@ -50,7 +50,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		timer = new Timer(DELAY_IMAGE,this); 
 		timer.start(); //Le timer démarre ici
 
-		//Initialise les variables
+		//Initialise les attributs
 		chargerClasse();
 		carte = new Carte();
 		creationJoueur();
@@ -62,9 +62,34 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	private static void creationJoueur() {
 	//Recupere le nom du joueur et son equipe
 		//Le nom
-    	Scanner sc = new Scanner(System.in);
-    	System.out.println("Entrez votre nom.");
-    	String nom = sc.nextLine();
+		boolean selectionNomFinie = false;
+    	Scanner sc = new Scanner(System.in); //Scanner utilise pour recuperer les entrees claviers
+    	String nom = "";
+    	char charCourant;
+    	System.out.println("Entrez votre nom."
+    					+ "\n(Uniquement des lettres et entre 3 et 10 caracteres)");
+    	while(!selectionNomFinie) {
+    		selectionNomFinie = true;
+    		try {
+    			nom = sc.nextLine();
+    			
+    			//test de longueur du nom
+    			if( !(3 <= nom.length() && nom.length() <= 10)) {
+    				throw new erreurName(nom.length());
+    			}
+    			
+    			//Test de presence de caracteres non desires dans le nom
+    			for (int i = 0; i < nom.length(); i++) {
+    				charCourant = nom.charAt(i);
+    				if(!('a' <= charCourant && charCourant <= 'z' || 'A' <= charCourant && charCourant <= 'Z') ) {
+    	    			throw new erreurName(i, charCourant);
+    				}
+    			}
+    		} catch (erreurName e) {
+    			System.out.println(e.recupererMessageErreur());
+    			selectionNomFinie = false;
+    		}
+    	}
     	Board.joueur = new Joueur(nom);
 
     	//L'equipe
