@@ -75,17 +75,17 @@ public class Board extends JPanel implements ActionListener, MouseListener {
     			
     			//test de longueur du nom
     			if( !(3 <= nom.length() && nom.length() <= 10)) {
-    				throw new erreurName(nom.length());
+    				throw new ErreurNom(nom.length());
     			}
     			
     			//Test de presence de caracteres non desires dans le nom
     			for (int i = 0; i < nom.length(); i++) {
     				charCourant = nom.charAt(i);
     				if(!('a' <= charCourant && charCourant <= 'z' || 'A' <= charCourant && charCourant <= 'Z') ) {
-    	    			throw new erreurName(i, charCourant);
+    	    			throw new ErreurNom(i, charCourant);
     				}
     			}
-    		} catch (erreurName e) {
+    		} catch (ErreurNom e) {
     			System.out.println(e.recupererMessageErreur());
     			selectionNomFinie = false;
     		}
