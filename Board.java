@@ -7,23 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Scanner;
-
 import javax.swing.JPanel;
 import javax.swing.Timer;
-
-/*
- * Ecrire l'IA:
- * selection de la case pour aller attaque
- * deplacer le personnage
- * finir le tour
- * 
- * faire les autres cas dans l'IA
- */
 
 
 @SuppressWarnings("serial")
@@ -53,33 +42,34 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	
 	public Board() {
-		addKeyListener(new TAdapter()); //Active l'écoute des touches du clavier
-		
-		this.addMouseListener(this);
+		this.addKeyListener(new TAdapter()); //Active l'écoute des touches du clavier
+		this.addMouseListener(this); //Active l'écoute des evenement de souris
 		
 		setFocusable(true); //Permet de pouvoir mettre la fenêtre en premier-plan 
 		setBackground(new Color(210, 180, 140));
 		timer = new Timer(DELAY_IMAGE,this); 
 		timer.start(); //Le timer démarre ici
 
-		//Initialise mes variables
+		//Initialise les variables
 		chargerClasse();
 		carte = new Carte();
 		creationJoueur();
-		creationEnnemi(3);
 		Carte.enleverCaseApparition();
 		Case.genererCarte(joueur, ennemi, -1);
 	}
 	
 	
 	private static void creationJoueur() {
+	//Recupere le nom du joueur et son equipe
+		//Le nom
     	Scanner sc = new Scanner(System.in);
     	System.out.println("Entrez votre nom.");
     	String nom = sc.nextLine();
     	Board.joueur = new Joueur(nom);
 
+    	//L'equipe
     	System.out.println("Voulez-vous une equipe equilibre preparee ? (y/n)"
-    			+ "\n(Un guerrier de chaque classe)");
+    					+ "\n(Un guerrier de chaque classe)");
     	char choix = sc.nextLine().charAt(0);
     	if(choix == 'y') {
     		Board.joueur.ajouterPersonnage(new Hache(true));
@@ -119,10 +109,31 @@ public class Board extends JPanel implements ActionListener, MouseListener {
     			}
     		}
     	}
+    	
+    	//Difficulte
+    	int nbEnnemi = 3;
+    	System.out.println("Choisissez votre difficulte."
+    			+ "\nF - Facile"
+    			+ "\nN - Normal"
+    			+ "\nD - Difficile");
+    	choix = sc.nextLine().charAt(0);
+    	if(choix == 'f' || choix == 'F') {
+    		nbEnnemi = 2;
+    	}
+    	else if(choix == 'n' || choix == 'N') {
+    		nbEnnemi = 3;
+    	}
+    	else if(choix == 'd' || choix == 'D') {
+    		nbEnnemi = 4;
+    	}
+    	
+		creationEnnemi(nbEnnemi);
     	sc.close();
     }
 	
+	
 	private static void creationEnnemi(int nbPersonnage) {
+	//Genere les personnage de l'IA
 		Personnage persoTemp = null;
 		for (int i = 0; i < nbPersonnage; i++) {
 			switch(Methode.nombreAlea(1, 3)) {
@@ -182,8 +193,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 
 	private static void dessinerInformation(Board board, Graphics2D g2d) {
+	//Affiche les informations des personnage vivants
+		//On utilise des offset en X et en Y pour que chaque information de personnage ne se chevauche pas
 		int offsetYEnPixel = Carte.getHauteurEnPixel() + tailleCaractereY; //La fin de la carte
 		int offsetXEnCase = 0;
+		
+		//Definission de la couleur et de la police du texte
 		g2d.setFont(new Font("Monospaced", Font.PLAIN, tailleCaractereY));
 		g2d.setColor(Color.BLACK);
 		
@@ -192,15 +207,17 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		offsetXEnCase = ennemi.dessinerInformation(board, g2d, offsetXEnCase, offsetYEnPixel);
 	}
 	
+	
 	private static void dessinerFinPartie(Board board, Graphics2D g2d) {
+	//Affiche la boite de dialogue avec le nessage de fin de partie
 		int longueurMax = 0;
 		int x, y, longueur, largeur,  epaisseurBord, posX, posY;
 		double espace;
-		ArrayList<String> messageCoupe = new ArrayList<String>();
+		ArrayList<String> messageCoupe = new ArrayList<String>(); //Contient chaque ligne du message de fin
 		if(partieGagner) {
 			messageCoupe.add("Bravo " + joueur.getNom() + ", vous avez");
 			messageCoupe.add("vaincu l'equipe ennemie et");
-			messageCoupe.add("recuperer l'embleme flamboyant !");
+			messageCoupe.add("recupere l'embleme flamboyant !");
 		}
 		else {
 			messageCoupe.add("L'equipe ennemie s'empare");
@@ -209,13 +226,14 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 			messageCoupe.add("prochaine fois.");
 		}
 		
-		//Dessine le carre aui sert de fond
-		for (String message : messageCoupe) {			
+		//Dessine le carre qui sert de fond
+		for (String message : messageCoupe) {	
 			if(message.length() > longueurMax) {
 				longueurMax = message.length();
 			}
 		}
 		
+		//Calcul des longueur et position du texte
 		posX = 20;
 		posY = 5;
 		epaisseurBord = 5;
@@ -225,8 +243,10 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		longueur = (int) (Board.tailleCaractereX * (longueurMax + 3 + 2 * espace));
 		largeur = (int) (Board.tailleCaractereY * (messageCoupe.size() + 0.4));
 
-		g2d.setColor(Color.BLACK);
+		//Borne exterieur
+		g2d.setColor(new Color(97, 78, 26));
 		g2d.fillRect(x-epaisseurBord, y-epaisseurBord, longueur+2*epaisseurBord, largeur+2*epaisseurBord);
+		//Fond de la boite de dialogue
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(x, y, longueur, largeur);
 
@@ -234,17 +254,9 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		//Affichage du texte
 		g2d.setColor(Color.BLACK);
 		g2d.setFont(new Font("Monospaced", Font.PLAIN, tailleCaractereY));
-		
-		int i = 0;
-		for (String message : messageCoupe) {
-			g2d.drawString(message, Board.tailleCaractereX * posX, Board.tailleCaractereY * ( i + posY +1 ) );
-			i++;
-		}
-		
-
-		
-		/*			g2d.drawString(informationListe[i], (int)(offsetXEnCase*Board.tailleCaractereX),
-												offsetYEnPixel+Board.tailleCaractereY*i);*/
+		for (int i = 0; i < messageCoupe.size(); i++) {
+			g2d.drawString(messageCoupe.get(i), Board.tailleCaractereX * posX, Board.tailleCaractereY * ( i + posY +1 ) );
+		}		
 	}
 
 
@@ -252,7 +264,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	//Mise à jour periodique des positions et index d'animation des entités mouvantes
 		if(enJeu) {
 			miseAJourDesIndicesDImage();
-			//Action de jeu
+			
+			//Echange de tour et active l'IA si c'est le tour de l'ennemi
 			if(!finPartie()) {
 				echangerTour();
 				if(tourEnnemi) {
@@ -260,64 +273,53 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 				}
 			}
 		}
-		/*else if(finPartie()) {
-			if(partieGagner) {
-			//Le joueur a gagner
-				
-			}
-			else if(partiePerdu) {
-			//L'ennemi a gagne
-				
-			}
-		}
-		
-		*/
 
 		repaint(); //Affiche l'image
 	}
-	
+
 
 	private boolean finPartie() {
+	//Test si la partie est terminer et enclenche sa fin si besoin
 		boolean partieFinie = false;
 		if(!animationEnCours) {
 			if(joueur.getPersonnages().size() == 0) {
-				ennemi.victoire();
+			//Victoire de l'ennemi
+				ennemi.victoire(); //Change l'image a afficher pour les personnage
 				partieFinie = true;
 				partieGagner = false;
 			}
 			if(ennemi.getPersonnages().size() == 0) {
-				joueur.victoire();
+			//Victoire du joueur
+				joueur.victoire(); //Change l'image a afficher pour les personnage
 				partieFinie = true;
 				partieGagner = true;
 			}
-			
+
 			if(partieFinie) {
 				Board.partieFinie = true;
 				Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
 				repaint();
-				//System.out.println("La partie est maintenant termine");
-				//timer.stop();
 			}
 		}
 		return partieFinie;
 	}
 
+
 	private class TAdapter extends KeyAdapter{ // Méthode qui s'active quand l'état d'une touche change
 		@Override
-		public void keyReleased(KeyEvent e){ //Action quand une touche est relachee
-			if(e.getKeyCode()==KeyEvent.VK_SPACE) { // Si le joueur tape sur la barre espace
+		public void keyReleased(KeyEvent e){
+		//Action quand une touche est relachee
+			if(e.getKeyCode()==KeyEvent.VK_SPACE) {
+				// Si le joueur tape sur la barre espace
 				if(!tourEnnemi) {
 					joueur.passerTour();
 				}
 			}
 		}
-		@Override
-		public void keyPressed(KeyEvent e){ //Action quand une touche est pressee
-		}
 	}
 
-	//Methode qui charge les attribut static
 	private static void chargerClasse() {
+	//Methode qui charge les attribut static
 		Epee.chargerClasse();
 		Lance.chargerClasse();
 		Hache.chargerClasse();
@@ -326,7 +328,8 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 /*
  * Gestion de la souris et de l'avancement de la partie
  */
-	public void mouseClicked(MouseEvent e) { //Evenement quand il y a un click
+	public void mouseClicked(MouseEvent e) {
+	//Evenement quand il y a un click
 	    int x=(int)(e.getX()/(Application.SCALE * 16)); //16 est la taille en pixel dune case avec un SCALE de 1
 	    int y=(int)(e.getY()/(Application.SCALE * 16));	    
 
@@ -374,24 +377,28 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	public static void personnagePeutAttaquerApresDeplacement() {
 	//Methode appele apres le deplacement (A la fin de l'animation)
 		if(personnageSelectionnerPeutAttaquer()) {
+		//Active l'attente que le joueur attaque ou deselectionne
 			attendDeselectionOuAttaque = true;
 			joueur.getPersonnages(indicePersonnageSelectionner).peutAttaquerApresDeplacement();
 		}
 		else {
+		//Le joueur ne peut pas ataquer avec son personnage, on le deselectionne donc
 			deselectionnePersonnage();
 		}
 	}
 	
 	
 	public static boolean personnageSelectionnerPeutAttaquer() {
+	//Test si le personnage est capable d'attaquer un adversaire au corps a corps
 		return joueur.getPersonnages(indicePersonnageSelectionner).peutAttaquer(ennemi);
 	}
 	
 	public static boolean personnageSelectionnerPeutAttaquer(int indice){
+	//Test si le personnage est capable d'attaquer un adversaire au corps a corps un personnage particulier
 		boolean peutAttaquer = false;
-		 if(indice >= 0)
-			 peutAttaquer = joueur.getPersonnages(indicePersonnageSelectionner).
-									peutAttaquer(ennemi.getPersonnages(indice));
+		if(indice >= 0)
+			 peutAttaquer = joueur.getPersonnages(indicePersonnageSelectionner)
+									.peutAttaquer(ennemi.getPersonnages(indice));
 		
 		return peutAttaquer;
 	}
@@ -402,11 +409,12 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 		indicePersonnageSelectionner = -1;
 		personnageSelectionner = false;
 		attendDeselectionOuAttaque = false;
-		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner);
+		Case.genererCarte(joueur, ennemi, indicePersonnageSelectionner); //On recalcul la carte pour avoir la bonne couleur de case
 	}
 	
 	
 	public static void selectionnePersonnage(int indicePersoSelectionner) {
+	//Selectionne le personnage voulu
 		personnageSelectionner = true;
 		attendDeselectionOuAttaque = false;
 		indicePersonnageSelectionner = indicePersoSelectionner;
@@ -415,14 +423,17 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	
 	private static void echangerTour(){
+	//Echange les tour des intelligences
 		if(!animationEnCours && !attendDeselectionOuAttaque) {
-		//Echange les tour des intelligences
+		//Si aucune action n'est en cours, on fait les test d'echange
 			if(joueur.ATerminerSonTour() && !tourEnnemi) {
+			//Termine le tour du joueur
 				tourEnnemi = true;
 				ennemi.debutTour();
 				Case.genererCarte(joueur, ennemi, -1);
 			}
 			else if(ennemi.ATerminerSonTour() && tourEnnemi) {
+				//Termine le tour de l'ennemi
 				tourEnnemi = false;
 				joueur.debutTour();
 				Case.genererCarte(joueur, ennemi, -1);
@@ -432,6 +443,7 @@ public class Board extends JPanel implements ActionListener, MouseListener {
 	
 	
 	public static void miseAJourDesIndicesDImage() {
+	//Met a jour les indice d'image pour les personnage qui attendent
 		imagePasseSansUpdate++;
 		if(DELAY_UPDATE - DELAY_IMAGE*imagePasseSansUpdate  < 0){
 			ennemi.update();

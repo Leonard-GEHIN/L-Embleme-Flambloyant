@@ -1,5 +1,6 @@
 import java.awt.EventQueue;
 import javax.swing.JFrame;
+
 @SuppressWarnings("serial")
 public class Application extends JFrame {
 	public static final double SCALE = 3;//Valeur a changer pour augmenter la taille de la fenetre (max pour 700px de hauteur = 3.5)
@@ -19,7 +20,6 @@ public class Application extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		
 		EventQueue.invokeLater(new Runnable() { //cree un thread pour executer l'application
 			@Override
 			public void run() { //demarre le jeu

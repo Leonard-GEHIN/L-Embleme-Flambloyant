@@ -1,16 +1,13 @@
 public class Ennemi extends Intelligence{
+	
 	public Ennemi() {
 		super();
-	}
-	
-	@Override
-	public void debutTour() {
-		for (Personnage personnage : personnages) {
-			personnage.debutTour();
-		}
+		this.tailleMax = 4; //Un ennemi a au max 4 personnages
 	}
 	
 	public void tourEnnemi() {
+	//Appelle les methodes d'intelligence artificiel
+	//Methode exclusivement appele pendant le tour de l'ennemi
 		try {
 			for (Personnage perso : personnages) {
 					if(!perso.isTourTerminer() && !Board.animationEnCours) {

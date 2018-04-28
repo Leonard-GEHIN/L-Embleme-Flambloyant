@@ -1,14 +1,18 @@
 import java.util.ArrayList;
 
+/*
+ * Classe gerant l'intelligence artificielle.
+ * Cette intelligence sert a faire jouer les ennemis du jeu.
+ */
 public class IntelligenceArtificiel { 
 	private static boolean[] peutAttaquerIndiceJoueur = {false, false, false};
 	protected static ArrayList<int[]> caseJouable = new ArrayList<int[]>();
-	private static Joueur joueur = Board.joueur;
-	private static Ennemi ennemi = Board.ennemi;
+	private static Joueur joueur;
+	private static Ennemi ennemi;
 	public static boolean personnageEnnemiPeutAttaquer = false;
 	public static int personnageJoueurCible = -1;
 	
-	
+	//Reinitialise les attribut de classe
 	private static void reinitialisationIA() {
 		for (int i = 0; i < peutAttaquerIndiceJoueur.length; i++) {
 			peutAttaquerIndiceJoueur[i] = false;
@@ -18,7 +22,7 @@ public class IntelligenceArtificiel {
 		caseJouable.clear();
 	}
 	
-	
+	//Methode qui calcul la prochaine action d'un personnage
 	public static void activerIntelligenceArtificiel(Personnage perso, Joueur joueurTemp, Ennemi ennemiTemp) {
 		boolean peutAttaquer = false, peutSeDeplacer;
 		joueur = joueurTemp;
@@ -26,8 +30,11 @@ public class IntelligenceArtificiel {
 		//On efface les ancienne donnees de l'IA
 		reinitialisationIA();
 		
-		//On recherche les actions possible par l'IA
-		//parcoursCarte() rempli le tableau peutAttaquerIndiceJoueur
+		/*
+		 * On recherche les actions possible par l'IA : attaquer ou se deplacer
+		 */
+		
+		//parcoursCarte() rempli le tableau peutAttaquerIndiceJoueur et l'arrayList de caseJouable
 		parcoursCarte(perso);
 		for (int i = 0; i < peutAttaquerIndiceJoueur.length; i++) {
 			if(peutAttaquerIndiceJoueur[i]) {
@@ -35,8 +42,9 @@ public class IntelligenceArtificiel {
 			}
 		}
 		
-		if(!caseJouable.isEmpty()) peutSeDeplacer = true;
-		else peutSeDeplacer = false;
+		//si l'arrayList de case jouable est vide, alors le personnage ne peut pas se deplacer
+		if(caseJouable.isEmpty()) peutSeDeplacer = false;
+		else peutSeDeplacer = true;
 		
 		
 		/*
@@ -153,38 +161,45 @@ public class IntelligenceArtificiel {
 
 
 	public static void personnageAAttaquer() {
-	//Reinitialise quelques qttribut apres l'attaque
+	//Reinitialise quelques attribut apres l'attaque
 		personnageEnnemiPeutAttaquer = false;
 		personnageJoueurCible = -1;
 	}
 	
 	
+	//Initialise le parcours de carte
 	public static void parcoursCarte(Personnage perso) {
 		int[][] carte = Carte.getCarte();
-		int profondeur = 3;
+		int profondeur = 3; //Profondeur de recursivite
 		
 		int x = perso.getCaseX();
 		int y = perso.getCaseY();
 		int[] intTemp = {x,y};
-		caseJouable.add(intTemp);
-		carte[y][x] = 200;
+		caseJouable.add(intTemp); //Ajoute la case ou se trouve le personnage
+		carte[y][x] = 200; //On indique que la case est deja visite (Son poid sera trop grand pour la traverser)
+		
+		//Le test sur les x et y pour ne pas sortir de la matrice carte[][] sont effectue dans la methode recursive
 		parcoursCarteRecursif(x - 1, y, profondeur, carte);
 		parcoursCarteRecursif(x + 1, y, profondeur, carte);
 		parcoursCarteRecursif(x, y + 1, profondeur, carte);
 		parcoursCarteRecursif(x, y - 1, profondeur, carte);
-
 	}
 	
 	
+	//Parcours la carte de maniere recursive
+	//Rempli l'arrayList de caseJouable et le tableau peutAttaquerIndiceJoueur[]
 	protected static void parcoursCarteRecursif(int x, int y, int profondeur, int[][] carte) {
-		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) {
+		if(x >= 0 && y >= 0 && x < carte[0].length && y < carte.length) { //Test sur les coordonnees
+			
+			//On regarde si une personnage du joueur est sur la case
 			int indicePersonnageEnnemi = joueur.selectionIndicePersonnage(x, y);
 			if(indicePersonnageEnnemi > -1) {
-			//Un ennemi est trouve
+			//Un personnage du joueur est trouve, on ne continue pas l'algorithme
 				peutAttaquerIndiceJoueur[indicePersonnageEnnemi] = true;
 			}
 			else {
 			//La case est vide, on avance
+				//On regarde la profondeur consomme par la case ou se situe la methode
 				int profondeurConsomee = 0;
 				switch(carte[y][x]){
 					case 3: //case normal
@@ -200,21 +215,22 @@ public class IntelligenceArtificiel {
 					case 0: //case vide
 						profondeurConsomee = 100;
 						break;
-					default:
+					default: //Autre case speciale deja valide
 						profondeurConsomee = 100;
 				}
 	
-				if(profondeurConsomee == 0 )System.out.println("Case inconnue");
 				profondeur -= profondeurConsomee;
 				if(profondeur > 0) {
-				//Si on a assez de point pour aller dans la case
-					carte[y][x] = 10; //On valide la case
+				//Si on a assez de point pour aller dans la case, on poursuit le parcours
+					carte[y][x] = 10; //On valide la case pour ne pas y retourner
 					
 					int[] temptab = {x, y};
 					if(!ennemi.caseEstRempliParPersonnage(x, y)) {
 					//Si un personnage allie est sur la case, on ne l'ajoute pas aux caseJouable
 						caseJouable.add(temptab);
 					}
+					
+					//On reutilise les methode recursive
 					parcoursCarteRecursif(x - 1, y, profondeur, carte);
 					parcoursCarteRecursif(x + 1, y, profondeur, carte);
 					parcoursCarteRecursif(x, y + 1, profondeur, carte);
@@ -224,7 +240,9 @@ public class IntelligenceArtificiel {
 		}
 	}
 	
+	//Affiche la carte dans le terminal
 	public static void afficherCarteTerminal(int[][] carte) {
+		System.out.println("Carte de parcours :");
 		for (int j = 0; j < carte.length; j++) {
 			for (int i = 0; i < carte[0].length; i++) {
 				System.out.print(carte[j][i] + " ");

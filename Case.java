@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 public class Case extends ObjetAffichable {
 	/*
-	 * 1 = Case de mouvement
-	 * 2 = case joueur
-	 * 3 = case ennemi
+	 * 1 = Case de mouvement (vert)
+	 * 2 = case joueur (bleu)
+	 * 3 = case ennemi (rouge)
+	 * 4 = Case d'un personnage qui a fini son tour (gris)
+	 * 5 = Case du personnage selectionner par le joueur (cyan)
 	 */
 	
 	protected static int[][] carteCase = new int[10][15];
@@ -49,9 +51,12 @@ public class Case extends ObjetAffichable {
 
 	private static void reinitialiserCases() {
 		while(!caseJouable.isEmpty()) {
+		//reinitialise la carte des cases jouables
 			caseJouable.remove(0);
 		}
-		for (int i = 0; i < carteCase.length; i++) {
+		
+		for (int i = 0; i < carteCase.length; i++) { 
+		//Reinitialise la carte des couleur
 			for (int j = 0; j < carteCase[i].length; j++) {
 				carteCase[i][j] = 0;
 			}
@@ -59,10 +64,12 @@ public class Case extends ObjetAffichable {
 	}
 
 	//Utiliser a chaque mouvement et chaque clic
+	//Cette methode genere une carte pour connaitre la couleur des cases ou les personnages sont situe.
 	public static void genererCarte(Intelligence joueur, Intelligence ennemi, int indicePersonnageSelectionner) {
 		reinitialiserCases();
 		
 		//si indicePersonnageSelectionner vaut -1, aucun personnage n'est selectionner
+		//Genere la carte des cases jouable si un personnage est selectionner par le joueur
 		if(indicePersonnageSelectionner > -1)
 			joueur.getPersonnages(indicePersonnageSelectionner).caseJouable(ennemi);
 
@@ -96,6 +103,7 @@ public class Case extends ObjetAffichable {
 		}
 	}
 
+	//Affiche la carte des couleur dans le terminal
 	public static void afficherCarteTerminal() {
 		System.out.println();
 		for (int j = 0; j < carteCase.length; j++) {
@@ -107,10 +115,12 @@ public class Case extends ObjetAffichable {
 	}
 
 
+	//Ajoute une case aux case jouable
 	public static void ajouterValeur(int[] temptab) {
 		caseJouable.add(temptab);
 	}
 	
+	//renvoie true si la case est libre pour qu'un personnage si deplace
 	public static boolean estCaseValidePourDeplacement(int x, int y) {
 		boolean estCaseValidePourDeplacementRetour = false;
 		

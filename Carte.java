@@ -26,10 +26,13 @@ public class Carte extends ObjetAffichable {
 	
 	@Override
 	public void dessiner(Board board, Graphics2D g2d) {
-		double sc = Application.SCALE*0.58;
+	//Dessine la carte et le triangle des armes 
+		double sc = Application.SCALE*0.58; //Echelle pour ajuster la taille du triangle des armes
 
+		//Carte
 		g2d.drawImage(imageCarte.getImage(), 0, 0,
 				getLargeurEnPixel(), getHauteurEnPixel(), board);
+		//Triangle des armes
 		g2d.drawImage(imageTriangle.getImage(),
 				(int) (getLargeurEnPixel() * 0.99 - imageTriangle.getIconWidth() * sc),
 				(int) (board.getHeight() * 0.99   - imageTriangle.getIconHeight()*sc),
@@ -39,21 +42,22 @@ public class Carte extends ObjetAffichable {
 
 	
 	public static void chargerCarte(int nouveauNumeroCarte) {
+	//Methode pour charger la carte, facilement modifiable pour ajouter d'autres cartes
 		numeroCarte = nouveauNumeroCarte;
 
-		imageCarte = new ImageIcon(Board.racine + "Carte/Carte0.png");
+		//Chargement
+		imageCarte = new ImageIcon(Board.racine + "Carte/Carte" + numeroCarte + ".png");
 		imageTriangle = new ImageIcon(Board.racine + "Carte/Faiblesse.png");
 
+		//Charge la matrice de la carte
 		switch (numeroCarte) {
-		case 1:
-			break;
-		default: // On charge la premiere carte
+		case 0: //Carte 0
 			int[][] carteTemp =   { { 0, 3, 0, 0, 0, 4, 3, 0, 0, 0, 3, 0, 0, 0, 0 },
 									{ 0, 3, 0, 0, 0, 3, 3, 3, 3, 3, 3, 0, 3, 3, 0 }, 
-									{ 3, 3, 3, 4, 3, 3, 4, 0, 3, 3, 4, 3, 3, 3, 3 },
+									{ 3, 3, 3, 4, 3, 3, 4, 0, 3, 3, 4, 2, 3, 3, 3 },
 									{ 4, 3, 3, 3, 3, 3, 3, 3, 0, 2, 2, 0, 3, 3, 3 }, 
 									{ 3, 3, 4, 3, 3, 4, 3, 4, 3, 3, 3, 0, 0, 3, 3 },
-									{ 3, 3, 3, 4, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3 }, 
+									{ 3, 3, 3, 4, 3, 3, 3, 3, 4, 3, 3, 2, 3, 3, 3 }, 
 									{ 4, 3, 4, 4, 3, 3, 4, 3, 4, 4, 2, 3, 0, 0, 3 },
 									{ 4, 1, 3, 4, 3, 3, 4, 3, 3, 4, 3, 3, 3, 0, 3 }, 
 									{ 3, 3, 1, 4, 3, 4, 4, 4, 3, 3, 3, 3, 3, 0, 0 },
@@ -75,6 +79,7 @@ public class Carte extends ObjetAffichable {
 
 	
 	public static void libererCaseApparition(int x, int y) {
+	//Si la case cible n'a pas eu de personnage apparue dessus, elle devient une case classique
 		if (carte[y][x] == 1 || carte[y][x] == 2)
 			carte[y][x] = 3;
 	}
@@ -95,9 +100,7 @@ public class Carte extends ObjetAffichable {
 	 * Deplace le personnage a la case indiquer
 	 * Les test pour valider la case et la possibilite du personnage pour aller a la case on deja ete suffisemment evaluer
 	 */
-		//En modifiant le personnage ci-dessous, nous modifiont aussi celui contenu dans l'intelligence
-		Personnage personnageADeplacer = intelligence.getPersonnages(indicePersonnageSelectionner);
-		personnageADeplacer.deplacer(x, y);
+		intelligence.getPersonnages(indicePersonnageSelectionner).deplacer(x, y);
 	}
 	
 	
@@ -110,7 +113,7 @@ public class Carte extends ObjetAffichable {
 	
 
 	/**
-	 * @return un clone de la carte afin que les modification externe ne modifie pas la vrai carte
+	 * retourne un clone de la carte afin que les modification externe ne modifie pas la vrai carte
 	 */
 	public static int[][] getCarte() {
 		int[][] carteClone = new int[10][15];

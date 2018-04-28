@@ -1,13 +1,17 @@
 import javax.swing.ImageIcon;
 
 public class Lance extends Personnage{
+	/*
+	 * Attributs static utilise pour chaque classes de Personnages mais qui doivent contenir differente informations
+	 * Ces attributs sont accessibles via des ascesseur abstrait dans la classe Mere
+	 */
 	protected static String[] tabGenerationNom = new String[4];
 	protected static String classe;
 	protected static ImageIcon imageVictoire;
 	protected static ImageIcon[] imageDebout = new ImageIcon[3];
 	protected static ImageIcon[][] imageMouvement  = new ImageIcon[4][4];
 
-	//Variables servant a calculer les statistiques des personnages
+	//Atributs servant a calculer les statistiques des personnages
 	protected static double ratioAttaque;
 	protected static double ratioDefence;
 	protected static double ratioPointsDeVie;
@@ -19,22 +23,28 @@ public class Lance extends Personnage{
 
 	
 	public static void chargerClasse() {
+	//Charges les attributs de stats
 		//Variables static
 		classe = "Lance";
-		ratioPointsDeVie = 0.45;
-		ratioAttaque = 0.45;
+		ratioPointsDeVie = 0.5;
+		ratioAttaque = 0.35;
 		ratioDefence = 1 - ratioAttaque - ratioPointsDeVie;
 		
+		//Nom
 		String[] tabTempNom = {"Effie", "Fjorm", "Abel", "Jagen"};
 		tabGenerationNom = tabTempNom;
 		
+		//Charge principalement les images
 		Personnage.chargerClasse(classe);
 	}
-
+	
+	/*
+	 * Ascesseur et mutateur pour que la classe Mere puisse acceder aux attribut
+	 */
 	
 	@Override
 	public double getAttaque(Personnage cible) {
-		return this.attaque+5;
+		return (int) (this.attaque * 1.1);
 	}
 	
 
